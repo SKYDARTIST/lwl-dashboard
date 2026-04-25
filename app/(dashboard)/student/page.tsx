@@ -1,99 +1,238 @@
-"use client";
+import { redirect } from 'next/navigation'
+import Link from 'next/link'
+import { FileText, CheckCircle, Clock, BookOpen } from 'lucide-react'
+import { getUser } from '@/lib/auth'
+import { getSupabase } from '@/lib/supabase/server'
+import { SubmitForm } from './SubmitForm'
 
-import { Search, Plus, Bell, ChevronDown, MoreHorizontal, MoreVertical, Book, FileText } from "lucide-react";
+export default async function StudentDashboard({
+  searchParams,
+}: {
+  searchParams: Promise<{ a?: string }>
+}) {
+  const user = await getUser()
+  if (!user) redirect('/login')
+  if (user.role !== 'student') redirect('/mentor')
 
-export default function StudentDashboard() {
+  const supabase = getSupabase()
+  const params = await searchParams
+
+  const [{ data: assignments }, { data: submissions }] = await Promise.all([
+    supabase.from('assignments').select('*').eq('assigned_to', user.id).order('created_at', { ascending: true }),
+    supabase.from('submissions').select('*').eq('student_id', user.id),
+  ])
+
+  // Compute status for each assignment
+  const merged = (assignments ?? []).map(a => {
+    const sub = (submissions ?? []).find(s => s.assignment_id === a.id)
+    return {
+      ...a,
+      status: sub ? (sub.status as 'submitted' | 'reviewed') : ('pending' as const),
+      submission_id: sub?.id ?? null,
+      submitted_content: sub?.content ?? null,
+      feedback: sub?.feedback ?? null,
+    }
+  })
+
+  const total = merged.length
+  const pending = merged.filter(a => a.status === 'pending').length
+  const submitted = merged.filter(a => a.status === 'submitted').length
+  const reviewed = merged.filter(a => a.status === 'reviewed').length
+  const done = submitted + reviewed
+  const progressPct = total > 0 ? Math.round((done / total) * 100) : 0
+
+  // Selected assignment — default to first pending, else first
+  const defaultId = merged.find(a => a.status === 'pending')?.id ?? merged[0]?.id
+  const selectedId = params.a ?? defaultId
+  const selected = merged.find(a => a.id === selectedId) ?? null
+
   return (
     <>
-      {/* Center Column */}
-      <main className="flex-[6] p-10 md:p-12 overflow-y-auto flex flex-col gap-8 bg-nexus-card">
+      {/* Center column */}
+      <main className="flex-[6] p-10 overflow-y-auto flex flex-col gap-8 bg-nexus-card custom-scrollbar">
+
+        {/* Header */}
         <header className="flex items-center justify-between">
-          <h1 className="text-[28px] font-extrabold tracking-tight">Dashboard</h1>
-          <div className="flex items-center bg-nexus-bg-main px-5 py-2.5 rounded-full w-[300px] gap-3 border border-nexus-border">
-            <Search className="text-nexus-muted" size={18} />
-            <input type="text" placeholder="Search..." className="bg-transparent border-none outline-none font-inherit text-sm w-full" />
+          <div>
+            <h1 className="text-[28px] font-extrabold tracking-tight text-nexus-text">Dashboard</h1>
+            <p className="text-sm text-nexus-muted mt-0.5">Welcome back, {user.name.split(' ')[0]}</p>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-nexus-accent text-white flex items-center justify-center cursor-pointer"><Plus size={20} /></div>
-            <div className="w-10 h-10 rounded-full bg-transparent border border-nexus-border text-nexus-text flex items-center justify-center cursor-pointer"><Bell size={20} /></div>
-            <div className="flex items-center gap-3 font-bold text-[15px]">
-              <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center font-bold text-white">A</div>
-              <span>Aarav</span>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shrink-0">
+              {user.name.charAt(0)}
             </div>
+            <span className="font-bold text-[15px] text-nexus-text">{user.name.split(' ')[0]}</span>
           </div>
         </header>
 
-        <div>
-          <div className="flex justify-between items-center mb-5">
-            <h2 className="text-[22px] font-extrabold tracking-tight">Your Assignments</h2>
-            <div className="px-4 py-2 rounded-full border border-nexus-border bg-nexus-card text-[13px] font-semibold flex items-center gap-2 cursor-pointer">
-              Status <ChevronDown size={16} />
-            </div>
+        {/* Assignments list */}
+        <section>
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-[22px] font-extrabold tracking-tight text-nexus-text">Your Assignments</h2>
+            <span className="text-xs text-nexus-muted font-semibold">{done} of {total} completed</span>
           </div>
-          
-          <div className="flex flex-col gap-2">
-            {/* List Item Mock */}
-            <div className="flex items-center p-4 px-5 bg-nexus-card rounded-xl transition cursor-pointer border border-nexus-border hover:-translate-y-0.5 hover:shadow-md">
-              <div className="w-12 h-12 rounded-full bg-[#fef3c7] text-nexus-pending flex items-center justify-center mr-4 font-bold text-lg"><FileText size={20}/></div>
-              <div className="font-bold text-[15px] flex-[1.5]">English Writing</div>
-              <div className="text-nexus-muted text-[13px] flex-[2] line-clamp-1">Write a 200-word essay on leadership.</div>
-              <div className="font-bold text-[13px] flex-1 flex items-center gap-1.5 text-nexus-pending">
-                <div className="w-2 h-2 rounded-full bg-nexus-pending"></div> Pending
-              </div>
-              <MoreHorizontal className="text-nexus-muted" />
-            </div>
-          </div>
-        </div>
 
-        <div>
-          <div className="flex justify-between items-center mb-5">
-            <h2 className="text-[22px] font-extrabold tracking-tight">Action Panel</h2>
-          </div>
-          <div className="flex gap-6 mt-2">
-            <div className="bg-nexus-card border border-nexus-border rounded-[32px] p-8 flex-1 flex flex-col gap-4 shadow-sm">
-              <div className="flex flex-col items-center text-center gap-2 mb-2">
-                <div className="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-2xl"><FileText size={28}/></div>
-                <h3 className="text-lg font-extrabold">English Writing</h3>
-                <p className="text-nexus-muted text-[13px]">Due: Monday 12 Dec</p>
+          {merged.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-nexus-muted gap-3">
+              <BookOpen size={32} className="opacity-30" />
+              <p className="text-sm">No assignments yet.</p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {merged.map(a => {
+                const isSelected = a.id === selectedId
+                const statusStylesMap: Record<'pending' | 'submitted' | 'reviewed', { row: string; icon: string; badge: string; dot: string }> = {
+                  pending:   { row: 'bg-amber-50  dark:bg-amber-950/20  border-amber-200  dark:border-amber-900',  icon: 'bg-amber-100  dark:bg-amber-950  text-amber-600',  badge: 'bg-amber-100  dark:bg-amber-950  text-amber-700  dark:text-amber-400',  dot: 'bg-amber-500'  },
+                  submitted: { row: 'bg-blue-50   dark:bg-blue-950/20   border-blue-200   dark:border-blue-900',   icon: 'bg-blue-100   dark:bg-blue-950   text-blue-600',   badge: 'bg-blue-100   dark:bg-blue-950   text-blue-700   dark:text-blue-400',   dot: 'bg-blue-500'   },
+                  reviewed:  { row: 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900', icon: 'bg-emerald-100 dark:bg-emerald-950 text-emerald-600', badge: 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400', dot: 'bg-emerald-500' },
+                }
+                const statusStyles = statusStylesMap[a.status as 'pending' | 'submitted' | 'reviewed']
+
+                return (
+                  <Link
+                    key={a.id}
+                    href={`/student?a=${a.id}`}
+                    className={`flex items-center p-4 px-5 rounded-xl border transition-all cursor-pointer hover:-translate-y-0.5 hover:shadow-md ${
+                      isSelected ? statusStyles.row : 'border-nexus-border bg-nexus-card'
+                    }`}
+                  >
+                    <div className={`w-11 h-11 rounded-full flex items-center justify-center mr-4 shrink-0 ${statusStyles.icon}`}>
+                      <FileText size={18} />
+                    </div>
+                    <div className="font-bold text-[15px] flex-[2] text-nexus-text">{a.title}</div>
+                    <div className="text-nexus-muted text-[13px] flex-[2.5] line-clamp-1 hidden md:block">{a.description}</div>
+                    <div className={`font-semibold text-[12px] flex-none flex items-center gap-1.5 px-3 py-1.5 rounded-full ml-4 ${statusStyles.badge}`}>
+                      <div className={`w-1.5 h-1.5 rounded-full ${statusStyles.dot}`} />
+                      {a.status.charAt(0).toUpperCase() + a.status.slice(1)}
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+          )}
+        </section>
+
+        {/* Assignment detail */}
+        {selected && (
+          <section>
+            <h2 className="text-[22px] font-extrabold tracking-tight text-nexus-text mb-5">
+              {selected.status === 'pending' ? 'Submit Your Work' :
+               selected.status === 'submitted' ? 'Awaiting Review' : 'Mentor Feedback'}
+            </h2>
+
+            <div className="flex gap-6">
+              {/* Left: assignment info + submitted answer */}
+              <div className="bg-nexus-bg-main border border-nexus-border rounded-[28px] p-7 flex-1 flex flex-col gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-950 text-indigo-600 rounded-2xl flex items-center justify-center shrink-0">
+                    <FileText size={22} />
+                  </div>
+                  <div>
+                    <div className="font-extrabold text-nexus-text">{selected.title}</div>
+                    <div className="text-xs text-nexus-muted mt-0.5 capitalize">{selected.status}</div>
+                  </div>
+                </div>
+
+                <div className="text-sm leading-relaxed text-nexus-text">{selected.description}</div>
+
+                {selected.submitted_content && (
+                  <div className="mt-1">
+                    <div className="text-xs font-extrabold uppercase tracking-widest text-nexus-muted mb-2">Your Answer</div>
+                    <div className="text-sm leading-relaxed text-nexus-text bg-nexus-card border border-nexus-border rounded-xl p-4 whitespace-pre-wrap">
+                      {selected.submitted_content}
+                    </div>
+                  </div>
+                )}
               </div>
-              <div className="text-sm leading-relaxed text-nexus-text bg-nexus-bg-main p-4 rounded-xl">
-                Write a 200-word essay on leadership.
+
+              {/* Right: action area */}
+              <div className="bg-nexus-bg-panel rounded-[28px] p-7 flex-1 flex flex-col gap-4">
+                {selected.status === 'pending' && (
+                  <SubmitForm assignmentId={selected.id} />
+                )}
+
+                {selected.status === 'submitted' && (
+                  <div className="flex flex-col items-center justify-center h-full gap-4 text-center py-8">
+                    <div className="w-16 h-16 bg-blue-100 dark:bg-blue-950 text-blue-500 rounded-full flex items-center justify-center">
+                      <Clock size={28} />
+                    </div>
+                    <div>
+                      <div className="font-extrabold text-nexus-text mb-1">Work Submitted</div>
+                      <div className="text-sm text-nexus-muted max-w-[200px]">
+                        Your work has been submitted and is waiting for mentor feedback.
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {selected.status === 'reviewed' && selected.feedback && (
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-950 text-emerald-600 rounded-xl flex items-center justify-center">
+                        <CheckCircle size={16} />
+                      </div>
+                      <span className="font-extrabold text-nexus-text">Mentor Feedback</span>
+                    </div>
+                    <div className="text-sm leading-relaxed text-nexus-text bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 rounded-xl p-4 whitespace-pre-wrap">
+                      {selected.feedback}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-            <div className="bg-nexus-bg-panel rounded-[32px] p-8 flex-1 flex flex-col gap-4">
-              <h4 className="text-base font-bold mb-1">Your Response</h4>
-              <textarea className="w-full bg-nexus-card border border-nexus-border rounded-2xl p-4 text-sm min-h-[120px] resize-y outline-none focus:border-nexus-accent transition" placeholder="Write here..."></textarea>
-              <button className="mt-auto bg-nexus-accent text-white border-none py-3.5 px-6 rounded-full font-semibold text-sm cursor-pointer hover:opacity-80 transition">Submit Work</button>
-            </div>
-          </div>
-        </div>
+          </section>
+        )}
       </main>
 
-      {/* Right Column */}
-      <aside className="flex-[3.5] bg-nexus-bg-panel rounded-[40px] m-4 mr-0 p-8 flex flex-col overflow-y-auto">
-        <h3 className="text-lg font-extrabold mb-5">My Courses</h3>
-        <div className="flex flex-col gap-4 mb-10">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-nexus-accent text-white flex items-center justify-center shrink-0"><Book size={18} /></div>
-            <div className="flex-1">
-              <div className="font-bold text-sm">English Writing</div>
-              <div className="text-xs text-nexus-muted font-medium mt-0.5">Pending</div>
+      {/* Right panel */}
+      <aside className="flex-[3.5] bg-nexus-bg-panel rounded-[40px] m-4 mr-0 p-8 flex flex-col gap-6 overflow-y-auto custom-scrollbar">
+        <div>
+          <h3 className="text-lg font-extrabold mb-5 text-nexus-text">My Progress</h3>
+
+          {[
+            { label: 'Pending',   count: pending,   dot: 'bg-amber-500'   },
+            { label: 'Submitted', count: submitted, dot: 'bg-blue-500'    },
+            { label: 'Reviewed',  count: reviewed,  dot: 'bg-emerald-500' },
+          ].map(({ label, count, dot }) => (
+            <div key={label} className="flex items-center justify-between text-sm mb-3">
+              <div className="flex items-center gap-2">
+                <div className={`w-2.5 h-2.5 rounded-full ${dot}`} />
+                <span className="text-nexus-muted font-medium">{label}</span>
+              </div>
+              <span className="font-extrabold text-nexus-text">{count}</span>
             </div>
-            <MoreVertical size={16} className="text-nexus-muted" />
+          ))}
+
+          <div className="flex justify-between text-[13px] font-bold mb-2 mt-5">
+            <span className="text-nexus-muted">Overall</span>
+            <span className="text-nexus-text">{progressPct}%</span>
+          </div>
+          <div className="w-full h-2 bg-nexus-border rounded-full overflow-hidden">
+            <div className="h-full bg-indigo-500 rounded-full transition-all duration-700" style={{ width: `${progressPct}%` }} />
           </div>
         </div>
 
-        <div className="flex flex-col items-center bg-nexus-bg-main rounded-[32px] p-8 mt-auto">
-          <h3 className="mb-6 font-extrabold self-start text-lg">Account Progress</h3>
-          <div className="w-full flex justify-between text-[13px] font-bold mt-6">
-            <span>Progress</span>
-            <span>0%</span>
-          </div>
-          <div className="w-full h-1.5 bg-gray-200 rounded-full mt-2 overflow-hidden">
-            <div className="h-full bg-nexus-accent rounded-full transition-all duration-1000 w-0"></div>
+        <div className="mt-4">
+          <h3 className="text-base font-extrabold mb-4 text-nexus-text">All Assignments</h3>
+          <div className="flex flex-col gap-3">
+            {merged.map(a => (
+              <Link key={a.id} href={`/student?a=${a.id}`} className="flex items-center gap-3 group cursor-pointer">
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
+                  a.status === 'pending'   ? 'bg-amber-100   dark:bg-amber-950   text-amber-600'   :
+                  a.status === 'submitted' ? 'bg-blue-100    dark:bg-blue-950    text-blue-600'    :
+                                             'bg-emerald-100 dark:bg-emerald-950 text-emerald-600'
+                }`}>
+                  <FileText size={14} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-bold text-nexus-text truncate group-hover:text-indigo-500 transition">{a.title}</div>
+                  <div className="text-xs text-nexus-muted capitalize">{a.status}</div>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       </aside>
     </>
-  );
+  )
 }
