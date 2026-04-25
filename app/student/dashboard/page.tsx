@@ -6,7 +6,8 @@ import type { AssignmentWithStatus } from '@/lib/types'
 import { StatusBadge } from '@/components/status-badge'
 import { EmptyState } from '@/components/empty-state'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { BookOpen, ChevronRight } from 'lucide-react'
 
 async function getAssignments(studentId: string): Promise<AssignmentWithStatus[]> {
@@ -82,12 +83,10 @@ export default async function StudentDashboard() {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-500 line-clamp-2 mb-4">{a.description}</p>
-                <Button asChild size="sm" variant="outline" className="w-full">
-                  <Link href={`/student/assignment/${a.id}`}>
-                    {a.status === 'pending' ? 'Start' : 'View'}
-                    <ChevronRight className="h-3 w-3 ml-1" />
-                  </Link>
-                </Button>
+                <Link href={`/student/assignment/${a.id}`} className={cn(buttonVariants({ size: 'sm', variant: 'outline' }), 'w-full inline-flex items-center justify-center gap-1')}>
+                  {a.status === 'pending' ? 'Start' : 'View'}
+                  <ChevronRight className="h-3 w-3 ml-1" />
+                </Link>
               </CardContent>
             </Card>
           ))}

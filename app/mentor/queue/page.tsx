@@ -3,7 +3,8 @@ import { getUser } from '@/lib/auth'
 import { getSupabase } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { EmptyState } from '@/components/empty-state'
-import { Button } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import { Card, CardContent } from '@/components/ui/card'
 import { ClipboardList, ChevronRight } from 'lucide-react'
 
@@ -76,11 +77,9 @@ export default async function MentorQueue() {
                   </p>
                   <p className="text-sm text-gray-600 mt-1 line-clamp-1">{s.content}</p>
                 </div>
-                <Button asChild size="sm" className="ml-4 shrink-0">
-                  <Link href={`/mentor/review/${s.id}`}>
-                    Review <ChevronRight className="h-3 w-3 ml-1" />
-                  </Link>
-                </Button>
+                <Link href={`/mentor/review/${s.id}`} className={cn(buttonVariants({ size: 'sm' }), 'ml-4 shrink-0 inline-flex items-center gap-1')}>
+                  Review <ChevronRight className="h-3 w-3 ml-1" />
+                </Link>
               </CardContent>
             </Card>
           ))}
