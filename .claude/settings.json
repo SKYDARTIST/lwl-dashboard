@@ -10,7 +10,25 @@
       "Bash(git init *)",
       "Bash(git add *)",
       "Bash(git commit *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(node -e \"console.log\\(require\\('/Users/cryptobulla/Desktop/BATMAN/assessments/learn-with-leaders/node_modules/next/package.json'\\).version\\)\")",
+      "Bash(npm run *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3001/)",
+      "Bash(kill %1)",
+      "Bash(node node_modules/next/dist/bin/next --version)",
+      "Bash(python3 -c ' *)",
+      "Bash(python3 -c \"print\\(open\\('/Users/cryptobulla/Desktop/BATMAN/assessments/learn-with-leaders/.env.local'\\).read\\(\\)[:50]\\)\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); d['scripts']['dev']='node node_modules/next/dist/bin/next dev'; d['scripts']['build']='node node_modules/next/dist/bin/next build'; d['scripts']['start']='node node_modules/next/dist/bin/next start'; print\\(json.dumps\\(d, indent=2\\)\\)\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000)",
+      "Bash(mkdir -p \"/Users/cryptobulla/Desktop/BATMAN/assessments/learn-with-leaders/app/api/submissions/[id]/review\")",
+      "Bash(mkdir -p \"/Users/cryptobulla/Desktop/BATMAN/assessments/learn-with-leaders/app/api/assignments/[id]\")",
+      "Bash(mkdir -p \"/Users/cryptobulla/Desktop/BATMAN/assessments/learn-with-leaders/app/student/assignment/[id]\")",
+      "Bash(mkdir -p \"/Users/cryptobulla/Desktop/BATMAN/assessments/learn-with-leaders/app/mentor/review/[id]\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000/login)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" -X POST -H \"Content-Type: application/json\" -d '{\"email\":\"aarav@lwl.edu\",\"password\":\"student123\"}' http://localhost:3000/api/auth/login)",
+      "Bash(curl -s -c /tmp/cookies.txt -X POST -H \"Content-Type: application/json\" -d '{\"email\":\"aarav@lwl.edu\",\"password\":\"student123\"}' http://localhost:3000/api/auth/login)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" -b /tmp/cookies.txt http://localhost:3000/student/dashboard)"
     ]
   }
 }
