@@ -31,6 +31,7 @@ export default async function StudentDashboard({
       submission_id: sub?.id ?? null,
       submitted_content: sub?.content ?? null,
       feedback: sub?.feedback ?? null,
+      reviewed_at: sub?.reviewed_at ?? null,
     }
   })
 
@@ -166,15 +167,30 @@ export default async function StudentDashboard({
                 )}
 
                 {selected.status === 'reviewed' && selected.feedback && (
-                  <div className="flex flex-col gap-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-950 text-emerald-600 rounded-xl flex items-center justify-center">
+                  <div className="flex flex-col gap-4 h-full">
+                    {/* Reviewed badge */}
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-emerald-500 text-white rounded-xl flex items-center justify-center shrink-0">
                         <CheckCircle size={16} />
                       </div>
-                      <span className="font-extrabold text-nexus-text">Mentor Feedback</span>
+                      <div>
+                        <div className="font-extrabold text-nexus-text text-sm">Reviewed</div>
+                        {selected.reviewed_at && (
+                          <div className="text-xs text-nexus-muted">
+                            {new Date(selected.reviewed_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div className="text-sm leading-relaxed text-nexus-text bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 rounded-xl p-4 whitespace-pre-wrap">
-                      {selected.feedback}
+
+                    {/* Feedback label */}
+                    <div className="text-xs font-extrabold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+                      Mentor Feedback
+                    </div>
+
+                    {/* Feedback text — distinct card, not a box */}
+                    <div className="flex-1 rounded-2xl border-l-4 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 px-5 py-4">
+                      <p className="text-sm leading-relaxed text-nexus-text whitespace-pre-wrap">{selected.feedback}</p>
                     </div>
                   </div>
                 )}
