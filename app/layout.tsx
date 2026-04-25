@@ -1,21 +1,23 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Plus_Jakarta_Sans } from 'next/font/google'
 import './globals.css'
-import { Toaster } from 'sonner'
 
-const inter = Inter({ subsets: ['latin'] })
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  variable: '--font-sans',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
-  title: 'LWL Dashboard',
-  description: 'Student & Mentor Learning Platform',
+  title: 'Nexus Learning',
+  description: 'Where mentors shape the future.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${plusJakartaSans.variable} font-sans antialiased bg-nexus-bg-body text-nexus-text flex items-center justify-center min-h-screen p-5`}>
         {children}
-        <Toaster position="top-right" richColors />
       </body>
     </html>
   )
