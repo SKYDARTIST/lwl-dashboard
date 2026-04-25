@@ -1,6 +1,6 @@
-import Link from "next/link";
-import { BookOpen, Sparkles, GraduationCap, Users, ArrowRight } from "lucide-react";
+import { BookOpen, Sparkles, GraduationCap, Users } from "lucide-react";
 import { ThemeToggle } from "./components/ThemeToggle";
+import { DemoLoginButton } from "./components/DemoLoginButton";
 
 export default function LandingPage() {
   return (
@@ -33,7 +33,7 @@ export default function LandingPage() {
 
         <div className="flex flex-col md:flex-row gap-6 w-full justify-center">
           {/* Student Card */}
-          <Link href="/student" className="anim-4 spring-card group bg-nexus-card rounded-[28px] p-8 w-full max-w-[320px] border border-nexus-border flex flex-col text-left cursor-pointer">
+          <div className="anim-4 spring-card group bg-nexus-card rounded-[28px] p-8 w-full max-w-[320px] border border-nexus-border flex flex-col text-left">
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5 bg-indigo-100 dark:bg-indigo-950 text-indigo-600">
               <GraduationCap size={28} />
             </div>
@@ -43,14 +43,16 @@ export default function LandingPage() {
             <div className="text-sm text-nexus-muted leading-relaxed mb-6 flex-1">
               View your pending assignments, submit responses, and track your progress — all in one place.
             </div>
-            <div className="bg-nexus-bg-main text-nexus-text font-bold py-3 px-4 rounded-xl flex justify-center items-center gap-2 group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-200">
-              Enter Student View
-              <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1" />
-            </div>
-          </Link>
+            <DemoLoginButton
+              email="aarav@lwl.edu"
+              password="student123"
+              label="Enter Student View"
+              className="bg-nexus-bg-main text-nexus-text font-bold py-3 px-4 rounded-xl flex justify-center items-center gap-2 hover:bg-indigo-600 hover:text-white transition-colors duration-200 cursor-pointer disabled:opacity-60 group"
+            />
+          </div>
 
           {/* Mentor Card */}
-          <Link href="/mentor" className="anim-5 spring-card group bg-nexus-card rounded-[28px] p-8 w-full max-w-[320px] border border-nexus-border flex flex-col text-left cursor-pointer">
+          <div className="anim-5 spring-card group bg-nexus-card rounded-[28px] p-8 w-full max-w-[320px] border border-nexus-border flex flex-col text-left">
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5 bg-pink-100 dark:bg-pink-950 text-pink-600">
               <Users size={28} />
             </div>
@@ -60,11 +62,13 @@ export default function LandingPage() {
             <div className="text-sm text-nexus-muted leading-relaxed mb-6 flex-1">
               View your students, manage the review queue, and deliver targeted feedback that drives real growth.
             </div>
-            <div className="bg-nexus-bg-main text-nexus-text font-bold py-3 px-4 rounded-xl flex justify-center items-center gap-2 group-hover:bg-pink-600 group-hover:text-white transition-colors duration-200">
-              Enter Mentor View
-              <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1" />
-            </div>
-          </Link>
+            <DemoLoginButton
+              email="priya@lwl.edu"
+              password="mentor123"
+              label="Enter Mentor View"
+              className="bg-nexus-bg-main text-nexus-text font-bold py-3 px-4 rounded-xl flex justify-center items-center gap-2 hover:bg-pink-600 hover:text-white transition-colors duration-200 cursor-pointer disabled:opacity-60 group"
+            />
+          </div>
         </div>
       </main>
     </div>
