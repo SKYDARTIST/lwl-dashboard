@@ -47,8 +47,8 @@ export function SubmitForm({ assignmentId }: { assignmentId: string }) {
           }}
           placeholder="Write your response here…"
           required
-          rows={10}
-          className="w-full min-h-[240px] bg-nexus-card border border-nexus-border rounded-2xl p-4 text-sm text-nexus-text outline-none focus:border-indigo-500 transition resize-none overflow-hidden custom-scrollbar pb-7"
+          rows={5}
+          className="w-full min-h-[120px] bg-nexus-card border border-nexus-border rounded-2xl p-4 text-sm text-nexus-text outline-none focus:border-indigo-500 transition resize-none overflow-hidden custom-scrollbar pb-7"
         />
         <span className="absolute bottom-2 right-3 text-[11px] text-nexus-muted pointer-events-none">
           {content.length} chars
