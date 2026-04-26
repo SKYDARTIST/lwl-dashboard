@@ -21,6 +21,33 @@ export async function POST(
   }
 
   const supabase = getSupabase()
+
+  // Fetch submission and verify it belongs to one of this mentor's students
+  const { data: submission } = await supabase
+    .from('submissions')
+    .select('student_id, status')
+    .eq('id', id)
+    .single()
+
+  if (!submission) {
+    return NextResponse.json({ error: 'Submission not found' }, { status: 404 })
+  }
+
+  if (submission.status === 'reviewed') {
+    return NextResponse.json({ error: 'Already reviewed' }, { status: 409 })
+  }
+
+  const { data: link } = await supabase
+    .from('mentor_students')
+    .select('student_id')
+    .eq('mentor_id', user.id)
+    .eq('student_id', submission.student_id)
+    .single()
+
+  if (!link) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const { data, error } = await supabase
     .from('submissions')
     .update({

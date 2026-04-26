@@ -27,6 +27,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Assignment not found' }, { status: 404 })
   }
 
+  // Prevent duplicate submissions
+  const { data: existing } = await supabase
+    .from('submissions')
+    .select('id')
+    .eq('assignment_id', assignment_id)
+    .eq('student_id', user.id)
+    .single()
+
+  if (existing) {
+    return NextResponse.json({ error: 'Already submitted' }, { status: 409 })
+  }
+
   const { data, error } = await supabase
     .from('submissions')
     .insert({ assignment_id, student_id: user.id, content: content.trim(), status: 'submitted' })

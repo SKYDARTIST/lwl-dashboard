@@ -32,7 +32,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="w-full max-w-[1280px] h-[90vh] min-h-[700px] bg-nexus-bg-main rounded-[40px] shadow-2xl flex overflow-hidden">
+    <div className="w-full max-w-[1520px] h-[90vh] min-h-[700px] bg-nexus-bg-main rounded-[40px] shadow-2xl flex overflow-hidden">
 
       {/* Sidebar */}
       <nav className="w-[90px] bg-nexus-sidebar flex flex-col items-center py-8 gap-8 shrink-0 z-10 text-white">

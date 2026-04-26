@@ -46,7 +46,7 @@ export default async function MentorDashboard({
     return {
       ...s,
       total: sAssignments.length,
-      pending: sAssignments.length - sSubs.length,
+      pending: sAssignments.filter(a => !sSubs.some(sub => sub.assignment_id === a.id)).length,
       submitted: sSubs.filter(sub => sub.status === 'submitted').length,
       reviewed: sSubs.filter(sub => sub.status === 'reviewed').length,
     }
