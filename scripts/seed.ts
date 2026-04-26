@@ -65,6 +65,8 @@ async function seed() {
       { title: 'Introduction to React',     description: 'Read the React docs and summarise the key concepts of components, props, and state in your own words. Minimum 200 words.', created_by: priya.id, assigned_to: aarav.id },
       { title: 'Build a Counter App',       description: 'Create a simple counter application using React hooks. It should have increment, decrement, and reset buttons. Explain your useState usage.', created_by: priya.id, assigned_to: aarav.id },
       { title: 'Async JavaScript',          description: 'Explain the difference between callbacks, promises, and async/await. Write a code example for each that fetches data from a public API.', created_by: priya.id, assigned_to: aarav.id },
+      { title: 'React Router Basics',       description: 'Set up React Router v6 in a small app with at least 3 routes. Demonstrate useNavigate, useParams, and a 404 fallback route. Document why client-side routing matters.', created_by: priya.id, assigned_to: aarav.id },
+      { title: 'Component Design Patterns', description: 'Research and implement two React design patterns: compound components and render props. Show a working example of each and explain when you would choose one over the other.', created_by: priya.id, assigned_to: aarav.id },
       { title: 'CSS Flexbox Challenge',     description: 'Build a responsive card layout using only Flexbox. The layout should have 3 columns on desktop and 1 column on mobile. No CSS Grid allowed.', created_by: priya.id, assigned_to: meera.id },
       { title: 'REST API Integration',      description: 'Use the JSONPlaceholder API to build a simple user list. Show loading state while fetching and handle errors gracefully.', created_by: priya.id, assigned_to: meera.id },
       { title: 'TypeScript Basics',         description: 'Convert a given JavaScript file to TypeScript. Add proper type annotations to all variables, functions, and return types. Explain 3 benefits of TypeScript.', created_by: priya.id, assigned_to: kabir.id },
@@ -85,6 +87,14 @@ async function seed() {
       assignment_id: byTitle('Build a Counter App').id,
       student_id: aarav.id,
       content: 'I built the counter using useState. The increment adds 1, decrement subtracts 1 with a minimum of 0, and reset sets it back to 0. I learned that useState re-renders the component every time state changes, which is why the UI stays in sync automatically.',
+      status: 'reviewed',
+      feedback: 'Good work implementing all three controls. One thing to note: consider adding a minimum bound to prevent negative counts — real-world counters rarely go below zero. Your explanation of re-renders is accurate. Keep it up.',
+      reviewed_at: new Date().toISOString(),
+    },
+    {
+      assignment_id: byTitle('React Router Basics').id,
+      student_id: aarav.id,
+      content: 'I set up React Router v6 with createBrowserRouter. My three routes are /, /about, and /users/:id. I used useNavigate in a button to redirect programmatically and useParams to extract the user ID from the URL. For 404 I added a catch-all route with path="*". Client-side routing avoids full page reloads which makes the app feel instant.',
       status: 'submitted',
     },
     {

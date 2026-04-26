@@ -1,6 +1,6 @@
+import Link from "next/link";
 import { BookOpen, Sparkles, GraduationCap, Users } from "lucide-react";
 import { ThemeToggle } from "./components/ThemeToggle";
-import { DemoLoginButton } from "./components/DemoLoginButton";
 
 export default function LandingPage() {
   return (
@@ -39,16 +39,16 @@ export default function LandingPage() {
             </div>
             <div className="text-xs font-extrabold uppercase tracking-widest text-indigo-500 mb-1">Student Portal</div>
             <div className="text-2xl font-extrabold mb-1 text-nexus-text">Learn & Grow</div>
-            <div className="text-xs text-nexus-muted mb-3">Demo account: Aarav Singh</div>
+            <div className="text-xs text-nexus-muted mb-3">Demo accounts: Aarav Singh + 5 others</div>
             <div className="text-sm text-nexus-muted leading-relaxed mb-6 flex-1">
               View your pending assignments, submit responses, and track your progress — all in one place.
             </div>
-            <DemoLoginButton
-              email="aarav@lwl.edu"
-              password="student123"
-              label="Enter Student View"
-              className="bg-nexus-bg-main text-nexus-text font-bold py-3 px-4 rounded-xl flex justify-center items-center gap-2 hover:bg-indigo-600 hover:text-white transition-colors duration-200 cursor-pointer disabled:opacity-60 group"
-            />
+            <Link
+              href="/login?role=student"
+              className="bg-nexus-bg-main text-nexus-text font-bold py-3 px-4 rounded-xl flex justify-center items-center gap-2 hover:bg-indigo-600 hover:text-white transition-colors duration-200 cursor-pointer"
+            >
+              Enter Student View →
+            </Link>
           </div>
 
           {/* Mentor Card */}
@@ -58,16 +58,16 @@ export default function LandingPage() {
             </div>
             <div className="text-xs font-extrabold uppercase tracking-widest text-pink-500 mb-1">Mentor Portal</div>
             <div className="text-2xl font-extrabold mb-1 text-nexus-text">Guide & Review</div>
-            <div className="text-xs text-nexus-muted mb-3">Demo account: Priya Sharma</div>
+            <div className="text-xs text-nexus-muted mb-3">Demo accounts: Priya Sharma · Ravi Kumar</div>
             <div className="text-sm text-nexus-muted leading-relaxed mb-6 flex-1">
               View your students, manage the review queue, and deliver targeted feedback that drives real growth.
             </div>
-            <DemoLoginButton
-              email="priya@lwl.edu"
-              password="mentor123"
-              label="Enter Mentor View"
-              className="bg-nexus-bg-main text-nexus-text font-bold py-3 px-4 rounded-xl flex justify-center items-center gap-2 hover:bg-pink-600 hover:text-white transition-colors duration-200 cursor-pointer disabled:opacity-60 group"
-            />
+            <Link
+              href="/login?role=mentor"
+              className="bg-nexus-bg-main text-nexus-text font-bold py-3 px-4 rounded-xl flex justify-center items-center gap-2 hover:bg-pink-600 hover:text-white transition-colors duration-200 cursor-pointer"
+            >
+              Enter Mentor View →
+            </Link>
           </div>
         </div>
       </main>

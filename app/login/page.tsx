@@ -1,16 +1,26 @@
 'use client'
 
-import { useState, FormEvent } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, FormEvent, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { BookOpen, ArrowLeft } from 'lucide-react'
 
-export default function LoginPage() {
+const ALL_DEMOS = [
+  { name: 'Aarav Singh',  role: 'student', email: 'aarav@lwl.edu',  password: 'student123', hover: 'hover:bg-indigo-50 dark:hover:bg-indigo-950/30 hover:border-indigo-300', arrow: 'group-hover:text-indigo-500' },
+  { name: 'Priya Sharma', role: 'mentor',  email: 'priya@lwl.edu',  password: 'mentor123',  hover: 'hover:bg-pink-50 dark:hover:bg-pink-950/30 hover:border-pink-300',   arrow: 'group-hover:text-pink-500'   },
+  { name: 'Ravi Kumar',   role: 'mentor',  email: 'ravi@lwl.edu',   password: 'mentor123',  hover: 'hover:bg-violet-50 dark:hover:bg-violet-950/30 hover:border-violet-300', arrow: 'group-hover:text-violet-500' },
+]
+
+function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const role = searchParams.get('role') // 'student' | 'mentor' | null
+
+  const demos = role ? ALL_DEMOS.filter(d => d.role === role) : ALL_DEMOS
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -51,7 +61,9 @@ export default function LoginPage() {
       </div>
 
       <h1 className="text-2xl font-extrabold text-nexus-text mb-1">Welcome back</h1>
-      <p className="text-sm text-nexus-muted mb-8">Sign in to your account to continue.</p>
+      <p className="text-sm text-nexus-muted mb-8">
+        {role === 'student' ? 'Sign in as a student.' : role === 'mentor' ? 'Sign in as a mentor.' : 'Sign in to your account to continue.'}
+      </p>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="flex flex-col gap-1.5">
@@ -96,20 +108,16 @@ export default function LoginPage() {
       <div className="mt-6 pt-6 border-t border-nexus-border">
         <p className="text-xs font-extrabold uppercase tracking-widest text-nexus-muted mb-3">Demo accounts</p>
         <div className="flex flex-col gap-2">
-          <button
-            onClick={e => fillDemo(e, 'aarav@lwl.edu', 'student123')}
-            className="flex items-center justify-between text-xs bg-nexus-bg-main hover:bg-indigo-50 dark:hover:bg-indigo-950/30 border border-nexus-border hover:border-indigo-300 rounded-xl px-4 py-2.5 transition cursor-pointer group"
-          >
-            <span className="font-semibold text-nexus-text">Aarav Singh — Student</span>
-            <span className="text-nexus-muted group-hover:text-indigo-500 transition">Use →</span>
-          </button>
-          <button
-            onClick={e => fillDemo(e, 'priya@lwl.edu', 'mentor123')}
-            className="flex items-center justify-between text-xs bg-nexus-bg-main hover:bg-pink-50 dark:hover:bg-pink-950/30 border border-nexus-border hover:border-pink-300 rounded-xl px-4 py-2.5 transition cursor-pointer group"
-          >
-            <span className="font-semibold text-nexus-text">Priya Sharma — Mentor</span>
-            <span className="text-nexus-muted group-hover:text-pink-500 transition">Use →</span>
-          </button>
+          {demos.map(d => (
+            <button
+              key={d.email}
+              onClick={e => fillDemo(e, d.email, d.password)}
+              className={`flex items-center justify-between text-xs bg-nexus-bg-main border border-nexus-border rounded-xl px-4 py-2.5 transition cursor-pointer group ${d.hover}`}
+            >
+              <span className="font-semibold text-nexus-text">{d.name} — {d.role.charAt(0).toUpperCase() + d.role.slice(1)}</span>
+              <span className={`text-nexus-muted transition ${d.arrow}`}>Use →</span>
+            </button>
+          ))}
         </div>
       </div>
 
@@ -117,5 +125,13 @@ export default function LoginPage() {
         <ArrowLeft size={12} /> Back to home
       </Link>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   )
 }

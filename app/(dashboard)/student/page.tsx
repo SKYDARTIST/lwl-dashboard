@@ -92,7 +92,7 @@ export default async function StudentDashboard({
                 return (
                   <Link
                     key={a.id}
-                    href={`/student?a=${a.id}`}
+                    href={`/student?a=${a.id}#detail`}
                     className={`flex items-center p-4 px-5 rounded-xl border transition-all cursor-pointer hover:-translate-y-0.5 hover:shadow-md ${
                       isSelected ? statusStyles.row : 'border-nexus-border bg-nexus-card'
                     }`}
@@ -115,7 +115,7 @@ export default async function StudentDashboard({
 
         {/* Assignment detail */}
         {selected && (
-          <section>
+          <section id="detail">
             <h2 className="text-[22px] font-extrabold tracking-tight text-nexus-text mb-5">
               {selected.status === 'pending' ? 'Submit Your Work' :
                selected.status === 'submitted' ? 'Awaiting Review' : 'Mentor Feedback'}
@@ -232,7 +232,7 @@ export default async function StudentDashboard({
           <h3 className="text-base font-extrabold mb-4 text-nexus-text">All Assignments</h3>
           <div className="flex flex-col gap-3">
             {merged.map(a => (
-              <Link key={a.id} href={`/student?a=${a.id}`} className="flex items-center gap-3 group cursor-pointer">
+              <Link key={a.id} href={`/student?a=${a.id}#detail`} className="flex items-center gap-3 group cursor-pointer">
                 <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
                   a.status === 'pending'   ? 'bg-amber-100   dark:bg-amber-950   text-amber-600'   :
                   a.status === 'submitted' ? 'bg-blue-100    dark:bg-blue-950    text-blue-600'    :
