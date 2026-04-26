@@ -62,6 +62,19 @@ export default async function MentorDashboard({
   // Selected student filter
   const selectedStudentId = params.st ?? null
 
+  // Full assignment breakdown for selected student
+  const studentDetail = selectedStudentId
+    ? {
+        student: studentStats.find(s => s.id === selectedStudentId) ?? null,
+        assignments: (assignments ?? [])
+          .filter(a => a.assigned_to === selectedStudentId)
+          .map(a => {
+            const sub = (submissions ?? []).find(s => s.assignment_id === a.id) ?? null
+            return { ...a, status: (sub?.status ?? 'pending') as 'pending' | 'submitted' | 'reviewed', submission: sub }
+          }),
+      }
+    : null
+
   // Queue filtered by selected student if ?st= is set
   const visibleQueue = selectedStudentId
     ? queue.filter(sub => sub.student_id === selectedStudentId)
@@ -145,6 +158,61 @@ export default async function MentorDashboard({
             </div>
           )}
         </section>
+
+        {/* Student detail — shown when a student row is selected */}
+        {studentDetail && studentDetail.student && (
+          <section>
+            <h2 className="text-[22px] font-extrabold tracking-tight text-nexus-text mb-5">
+              {studentDetail.student.name}&apos;s Assignments
+            </h2>
+            <div className="flex flex-col gap-2">
+              {studentDetail.assignments.map(a => {
+                const styleMap = {
+                  pending:   { badge: 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400', dot: 'bg-amber-500' },
+                  submitted: { badge: 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-400',     dot: 'bg-blue-500'   },
+                  reviewed:  { badge: 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400', dot: 'bg-emerald-500' },
+                }
+                const style = styleMap[a.status]
+                return (
+                  <div key={a.id} className="bg-nexus-card border border-nexus-border rounded-xl p-4 px-5 flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <div className="font-bold text-[15px] text-nexus-text">{a.title}</div>
+                      <span className={`text-[11px] font-bold flex items-center gap-1.5 px-3 py-1 rounded-full ${style.badge}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />
+                        {a.status.charAt(0).toUpperCase() + a.status.slice(1)}
+                      </span>
+                    </div>
+                    <div className="text-xs text-nexus-muted leading-relaxed">{a.description}</div>
+                    {a.submission?.content && (
+                      <div className="mt-1">
+                        <div className="text-[10px] font-extrabold uppercase tracking-widest text-nexus-muted mb-1">Submission</div>
+                        <div className="text-xs text-nexus-text bg-nexus-bg-main border border-nexus-border rounded-lg px-3 py-2 line-clamp-2">
+                          {a.submission.content}
+                        </div>
+                      </div>
+                    )}
+                    {a.submission?.feedback && (
+                      <div className="mt-1">
+                        <div className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 mb-1">Your Feedback</div>
+                        <div className="text-xs text-nexus-text bg-emerald-50 dark:bg-emerald-950/30 border-l-2 border-emerald-500 rounded-lg px-3 py-2 line-clamp-2">
+                          {a.submission.feedback}
+                        </div>
+                      </div>
+                    )}
+                    {a.status === 'submitted' && (
+                      <Link
+                        href={`/mentor?st=${studentDetail.student!.id}&s=${a.submission!.id}#review`}
+                        className="self-start text-xs font-bold text-pink-600 dark:text-pink-400 hover:text-pink-500 transition mt-1"
+                      >
+                        Review this →
+                      </Link>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </section>
+        )}
 
         {/* Submissions queue */}
         <section>
