@@ -150,8 +150,11 @@ export default async function StudentDashboard({
                 </div>
               </div>
               {selected.grade && (
-                <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-extrabold text-sm shrink-0">
-                  {selected.grade}
+                <div className="flex flex-col items-center gap-0.5 shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-extrabold text-sm">
+                    {selected.grade}
+                  </div>
+                  <span className="text-[9px] font-bold uppercase tracking-widest text-nexus-muted">Grade</span>
                 </div>
               )}
             </div>
