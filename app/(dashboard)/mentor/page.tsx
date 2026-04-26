@@ -168,7 +168,7 @@ export default async function MentorDashboard({
                           <Link
                             key={filter}
                             href={chipActive ? `/mentor?st=${s.id}` : `/mentor?st=${s.id}&filter=${filter}`}
-                            className={`px-2 py-0.5 rounded-lg transition-colors ${cls} ${chipActive ? 'ring-1 ring-current' : ''}`}
+                            className={`px-2 py-0.5 rounded-lg transition-colors whitespace-nowrap ${cls} ${chipActive ? 'ring-1 ring-current' : ''}`}
                           >
                             {label}
                           </Link>
