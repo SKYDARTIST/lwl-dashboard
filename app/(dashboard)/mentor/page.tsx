@@ -3,8 +3,13 @@ import Link from 'next/link'
 import { FileText, Users, Inbox, CheckCircle } from 'lucide-react'
 import { getUser } from '@/lib/auth'
 import { getSupabase } from '@/lib/supabase/server'
+import dynamic from 'next/dynamic'
 import { ReviewForm } from './ReviewForm'
-import { StudentDetailSection } from './StudentDetailSection'
+
+const StudentDetailSection = dynamic(
+  () => import('./StudentDetailSection').then(m => m.StudentDetailSection),
+  { ssr: false }
+)
 
 export default async function MentorDashboard({
   searchParams,
