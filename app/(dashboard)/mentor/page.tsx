@@ -135,31 +135,40 @@ export default async function MentorDashboard({
               {studentStats.map(s => {
                 const isActive = selectedStudentId === s.id
                 return (
-                  <Link
+                  <div
                     key={s.id}
-                    href={isActive ? '/mentor' : `/mentor?st=${s.id}`}
-                    className={`flex items-center p-4 px-5 rounded-xl border transition-all cursor-pointer hover:-translate-y-0.5 hover:shadow-md ${
+                    className={`flex items-center p-4 px-5 rounded-xl border transition-all ${
                       isActive
                         ? 'bg-indigo-50 dark:bg-indigo-950/20 border-indigo-300 dark:border-indigo-700'
-                        : 'bg-nexus-card border-nexus-border hover:border-indigo-300 dark:hover:border-indigo-700'
+                        : 'bg-nexus-card border-nexus-border'
                     }`}
                   >
-                    <div className="w-11 h-11 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-600 flex items-center justify-center mr-4 font-bold text-sm shrink-0">
-                      {s.name.charAt(0)}
-                    </div>
-                    <div className="font-bold text-[15px] flex-[2] text-nexus-text">{s.name}</div>
-                    <div className="flex gap-2 text-[12px] font-semibold flex-[2]" onClick={e => e.preventDefault()}>
-                      {[
-                        { label: `${s.pending} pending`,   filter: 'pending',   cls: 'text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-950/40' },
-                        { label: `${s.submitted} to review`, filter: 'submitted', cls: 'text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-950/40' },
-                        { label: `${s.reviewed} reviewed`,  filter: 'reviewed',  cls: 'text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/40' },
-                      ].map(({ label, filter, cls }) => {
-                        const isActive = selectedStudentId === s.id && selectedFilter === filter
+                    <Link
+                      href={isActive ? '/mentor' : `/mentor?st=${s.id}`}
+                      className="flex items-center mr-4 shrink-0"
+                    >
+                      <div className="w-11 h-11 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-600 flex items-center justify-center font-bold text-sm">
+                        {s.name.charAt(0)}
+                      </div>
+                    </Link>
+                    <Link
+                      href={isActive ? '/mentor' : `/mentor?st=${s.id}`}
+                      className="font-bold text-[15px] flex-[2] text-nexus-text hover:text-indigo-500 transition-colors"
+                    >
+                      {s.name}
+                    </Link>
+                    <div className="flex gap-2 text-[12px] font-semibold flex-[2]">
+                      {([
+                        { label: `${s.pending} pending`,     filter: 'pending',   cls: 'text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-950/40' },
+                        { label: `${s.submitted} to review`, filter: 'submitted', cls: 'text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-950/40'   },
+                        { label: `${s.reviewed} reviewed`,   filter: 'reviewed',  cls: 'text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/40' },
+                      ] as const).map(({ label, filter, cls }) => {
+                        const chipActive = selectedStudentId === s.id && selectedFilter === filter
                         return (
                           <Link
                             key={filter}
-                            href={isActive ? `/mentor?st=${s.id}` : `/mentor?st=${s.id}&filter=${filter}`}
-                            className={`px-2 py-0.5 rounded-lg transition-colors ${cls} ${isActive ? 'ring-1 ring-current' : ''}`}
+                            href={chipActive ? `/mentor?st=${s.id}` : `/mentor?st=${s.id}&filter=${filter}`}
+                            className={`px-2 py-0.5 rounded-lg transition-colors ${cls} ${chipActive ? 'ring-1 ring-current' : ''}`}
                           >
                             {label}
                           </Link>
@@ -167,7 +176,7 @@ export default async function MentorDashboard({
                       })}
                     </div>
                     <div className="text-xs text-nexus-muted">{s.total} assignments</div>
-                  </Link>
+                  </div>
                 )
               })}
             </div>
