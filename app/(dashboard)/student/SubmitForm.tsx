@@ -36,13 +36,19 @@ export function SubmitForm({ assignmentId }: { assignmentId: string }) {
       <div className="text-xs text-nexus-muted bg-nexus-bg-main border border-nexus-border rounded-xl px-3 py-2">
         Write clearly — your mentor will read this before giving feedback.
       </div>
-      <div className="relative flex-1 flex flex-col">
+      <div className="relative flex flex-col">
         <textarea
           value={content}
-          onChange={e => setContent(e.target.value)}
+          onChange={e => {
+            setContent(e.target.value)
+            // auto-grow: reset then expand to content height
+            e.target.style.height = 'auto'
+            e.target.style.height = e.target.scrollHeight + 'px'
+          }}
           placeholder="Write your response here…"
           required
-          className="flex-1 min-h-[140px] bg-nexus-card border border-nexus-border rounded-2xl p-4 text-sm text-nexus-text outline-none focus:border-indigo-500 transition resize-y custom-scrollbar pb-7"
+          rows={10}
+          className="w-full min-h-[240px] bg-nexus-card border border-nexus-border rounded-2xl p-4 text-sm text-nexus-text outline-none focus:border-indigo-500 transition resize-none overflow-hidden custom-scrollbar pb-7"
         />
         <span className="absolute bottom-2 right-3 text-[11px] text-nexus-muted pointer-events-none">
           {content.length} chars
