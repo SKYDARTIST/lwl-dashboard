@@ -13,6 +13,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'assignment_id and content are required' }, { status: 400 })
   }
 
+  if (content.trim().length > 10000) {
+    return NextResponse.json({ error: 'Content too long (max 10,000 chars)' }, { status: 400 })
+  }
+
   const supabase = getSupabase()
 
   // Verify assignment belongs to this student

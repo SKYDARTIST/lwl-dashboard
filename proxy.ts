@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { jwtVerify } from 'jose'
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? 'fallback')
+if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET environment variable is not set')
+const secret = new TextEncoder().encode(process.env.JWT_SECRET)
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl
