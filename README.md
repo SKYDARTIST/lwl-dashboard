@@ -108,52 +108,54 @@ Aarav (assigned to Priya) has the richest seed data: 2 reviewed assignments with
 
 ---
 
-## What I completed
+## What I built
 
-**All must-haves:**
-- Login with role-based routing (students can't access mentor routes and vice versa)
-- JWT in an httpOnly cookie — 7-day expiry, verified on every request via middleware
-- Student dashboard: assignment list with status badges, detail + submit view, feedback view
-- Mentor dashboard: students list with per-student stats, submissions queue, full review flow
-- Loading/empty states on every view; form validation with inline error messages; desktop-first responsive layout
-- Seed data: 2 mentors, 6 students, 12 assignments, mixed statuses across all students
+I wanted the app to feel simple and easy to use — not something that looks impressive but confuses people. The whole point is that a student should open it and immediately know what they need to do, and a mentor should open it and immediately know what needs their attention.
 
-**All 5 bonuses:**
-- Progress indicator — "X of Y completed" + indigo progress bar in the student sidebar
-- Dark mode — full light/dark with persistent toggle, CSS custom properties
-- Mentor can create assignments — "New Assignment" modal in the dashboard header, assigns to any of the mentor's students
-- Letter grade — optional A+/A/A−…F grade selector in the review form; shown as a badge to both mentor and student
-- Tests — 9 Vitest unit tests for the submission review validation flow (`npm test`)
+The landing page does one job: tells you what the app is and lets you pick who you are. Student or mentor. From there each person gets their own sign-in flow and their own dashboard. A student literally cannot get into the mentor dashboard and vice versa — the routes are protected both at the middleware level and in the API.
+
+**Student side** — you see all your assignments with colour-coded status (amber = pending, blue = submitted, green = reviewed). Click any row and the detail opens right in the sidebar — no scrolling, no page jump. The submit form has a character counter so you know how much you've written. When a mentor reviews your work you can see their feedback and your grade right there.
+
+**Mentor side** — you see all your students with live stats (how many pending, how many waiting for review, how many done). Click a student to expand their assignments. There's a floating modal when you click an assignment so you can read everything without leaving the page. The review form has an optional grade selector and a feedback textarea. There's also a "New Assignment" button in the header so mentors can assign work directly from the dashboard.
+
+Both sides have light and dark mode.
+
+**All must-haves done.** All 5 bonuses done (progress indicator, dark mode, create assignment, letter grades, Vitest tests).
 
 ---
 
-## What I intentionally skipped
+## What I kept out
 
-- **Sign-up / password reset** — seeded users only, as specified
-- **Real-time updates** — `router.refresh()` after mutations is enough for the review loop; no websockets needed
-- **File uploads** — text-only as specified
-- **Search / pagination** — seed data is small enough that it's not needed; the stat-chip filter on the mentor dashboard exists because a mentor genuinely needs to slice "what needs review" from a multi-student view
-- **Profile editing, settings** — out of scope
+I didn't cut features from the brief — everything that was asked for is in there. What I kept out was things that would've added complexity without improving the core loop:
 
----
-
-## What I'd do next with more time
-
-1. **Multi-student assignment** — the create-assignment form currently assigns to one student at a time; a checkbox list would let mentors batch-assign
-2. **Optimistic UI** — the submit and review forms do a full server refresh today; React transitions + optimistic state would make them feel instant
-3. **Email on review** — one Resend call when a mentor marks reviewed so the student gets notified without polling
-4. **Generated TypeScript types from Supabase** — currently using `any` for DB rows; `supabase gen types` would tighten this
-5. **Mobile layout** — the sidebar collapses awkwardly below ~768px; a bottom-nav pattern would fix this properly
+- **Sign-up / password reset** — not in scope, seeded users only
+- **Real-time updates** — the page refreshes after every action, which is enough for this use case
+- **File uploads** — text only as specified
+- **Search / pagination** — with 6 students and 12 assignments the data is small enough that filtering by clicking a student row is sufficient
+- **Due dates** — I thought about this but it would have needed schema changes, timezone handling, and submission blocking logic. Kept scope tight.
 
 ---
 
-## Tech decisions worth noting
+## What I'd build next
 
-- **Next.js 16 App Router + Server Components** — all data fetching is server-side; client components are used only where state is needed (forms, modal, theme toggle)
-- **Supabase (Postgres)** — chosen over SQLite because the free tier has a public URL, making the live demo possible without any extra hosting
-- **JWT in httpOnly cookie** — simple, no third-party auth service, survives page refreshes; `jose` for signing/verification
+Right now it works for 6 students and 2 mentors. What I'd actually want to turn this into is a full personalised growth dashboard for a whole class.
+
+Each student could track not just assignments but exams, projects, and general progress over time. Mentors could see a student's full trajectory — not just "did they submit this assignment" but how they're improving. The feedback loop would become a proper coaching tool.
+
+The other thing I'd add immediately is notifications. Right now you have to log in to know if something happened. A student should get notified the moment a new assignment is assigned or feedback lands. A mentor should get notified when a submission comes in. That would make the review loop actually fast instead of relying on people to check in.
+
+On the technical side: mobile layout needs work (the sidebar breaks below ~768px), and I'd generate TypeScript types from Supabase instead of using `any` for DB rows.
+
+---
+
+## Why this stack
+
+I've used Next.js, Supabase, and JWT across several personal projects before this. I don't come from a CS background so I made a deliberate call — use the tools I know well and focus on building something solid, rather than experiment with something new and end up with something half-done. The stack fit the brief well anyway: Supabase gives a live database with a public URL so the demo actually works, Next.js handles both the UI and the API in one project, and JWT in an httpOnly cookie is simple auth that doesn't need a third-party service.
+
+Other choices worth noting:
 - **Tailwind v4 CSS-first config** — `@theme` directive with CSS custom properties for the full light/dark token system
-- **Vitest** — zero config for pure TS logic; the review validation logic was extracted into `lib/review-validation.ts` so it's testable without mocking Next.js internals
+- **Vitest** — extracted the review validation logic into `lib/review-validation.ts` so it could be tested without mocking any Next.js internals
+- **Server Components by default** — client components only where state is needed (forms, modal, theme toggle)
 
 ---
 
