@@ -8,7 +8,7 @@ import { ReviewForm } from './ReviewForm'
 export default async function MentorDashboard({
   searchParams,
 }: {
-  searchParams: Promise<{ s?: string }>
+  searchParams: Promise<{ s?: string; st?: string }>
 }) {
   const user = await getUser()
   if (!user) redirect('/login')
@@ -58,6 +58,14 @@ export default async function MentorDashboard({
       assignment: (assignments ?? []).find(a => a.id === sub.assignment_id) ?? null,
       student: (students ?? []).find(s => s.id === sub.student_id) ?? null,
     }))
+
+  // Selected student filter
+  const selectedStudentId = params.st ?? null
+
+  // Queue filtered by selected student if ?st= is set
+  const visibleQueue = selectedStudentId
+    ? queue.filter(sub => sub.student_id === selectedStudentId)
+    : queue
 
   // Selected submission (can be any submission, not just queued)
   const selectedId = params.s
@@ -109,20 +117,31 @@ export default async function MentorDashboard({
             </div>
           ) : (
             <div className="flex flex-col gap-2">
-              {studentStats.map(s => (
-                <div key={s.id} className="flex items-center p-4 px-5 bg-nexus-card rounded-xl border border-nexus-border hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors">
-                  <div className="w-11 h-11 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-600 flex items-center justify-center mr-4 font-bold text-sm shrink-0">
-                    {s.name.charAt(0)}
-                  </div>
-                  <div className="font-bold text-[15px] flex-[2] text-nexus-text">{s.name}</div>
-                  <div className="flex gap-4 text-[12px] font-semibold flex-[2]">
-                    <span className="text-amber-600 dark:text-amber-400">{s.pending} pending</span>
-                    <span className="text-blue-600 dark:text-blue-400">{s.submitted} to review</span>
-                    <span className="text-emerald-600 dark:text-emerald-400">{s.reviewed} reviewed</span>
-                  </div>
-                  <div className="text-xs text-nexus-muted">{s.total} assignments</div>
-                </div>
-              ))}
+              {studentStats.map(s => {
+                const isActive = selectedStudentId === s.id
+                return (
+                  <Link
+                    key={s.id}
+                    href={isActive ? '/mentor' : `/mentor?st=${s.id}`}
+                    className={`flex items-center p-4 px-5 rounded-xl border transition-all cursor-pointer hover:-translate-y-0.5 hover:shadow-md ${
+                      isActive
+                        ? 'bg-indigo-50 dark:bg-indigo-950/20 border-indigo-300 dark:border-indigo-700'
+                        : 'bg-nexus-card border-nexus-border hover:border-indigo-300 dark:hover:border-indigo-700'
+                    }`}
+                  >
+                    <div className="w-11 h-11 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-600 flex items-center justify-center mr-4 font-bold text-sm shrink-0">
+                      {s.name.charAt(0)}
+                    </div>
+                    <div className="font-bold text-[15px] flex-[2] text-nexus-text">{s.name}</div>
+                    <div className="flex gap-4 text-[12px] font-semibold flex-[2]">
+                      <span className="text-amber-600 dark:text-amber-400">{s.pending} pending</span>
+                      <span className="text-blue-600 dark:text-blue-400">{s.submitted} to review</span>
+                      <span className="text-emerald-600 dark:text-emerald-400">{s.reviewed} reviewed</span>
+                    </div>
+                    <div className="text-xs text-nexus-muted">{s.total} assignments</div>
+                  </Link>
+                )
+              })}
             </div>
           )}
         </section>
@@ -130,22 +149,29 @@ export default async function MentorDashboard({
         {/* Submissions queue */}
         <section>
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-[22px] font-extrabold tracking-tight text-nexus-text">Review Queue</h2>
+            <div className="flex items-center gap-3">
+              <h2 className="text-[22px] font-extrabold tracking-tight text-nexus-text">Review Queue</h2>
+              {selectedStudentId && (
+                <Link href="/mentor" className="text-xs text-indigo-500 hover:text-indigo-400 font-semibold transition">
+                  ✕ Clear filter
+                </Link>
+              )}
+            </div>
             {queue.length > 0 && (
               <span className="text-xs font-extrabold bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-400 px-3 py-1 rounded-full">
-                {queue.length} awaiting
+                {visibleQueue.length} awaiting
               </span>
             )}
           </div>
 
-          {queue.length === 0 ? (
+          {visibleQueue.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-nexus-muted gap-3">
               <CheckCircle size={32} className="opacity-30" />
-              <p className="text-sm">All caught up — no submissions awaiting review.</p>
+              <p className="text-sm">{selectedStudentId ? 'No pending submissions for this student.' : 'All caught up — no submissions awaiting review.'}</p>
             </div>
           ) : (
             <div className="flex flex-col gap-2">
-              {queue.map(sub => {
+              {visibleQueue.map(sub => {
                 const isSelected = sub.id === selectedId
                 return (
                   <Link
