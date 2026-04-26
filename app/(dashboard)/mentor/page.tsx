@@ -5,6 +5,7 @@ import { getUser } from '@/lib/auth'
 import { getSupabase } from '@/lib/supabase/server'
 import { ReviewForm } from './ReviewForm'
 import { StudentDetailSection } from './StudentDetailWrapper'
+import { CreateAssignmentForm } from './CreateAssignmentForm'
 
 export default async function MentorDashboard({
   searchParams,
@@ -34,7 +35,7 @@ export default async function MentorDashboard({
       ? supabase.from('assignments').select('id, title, description, assigned_to, created_at').in('assigned_to', studentIds)
       : Promise.resolve({ data: [] }),
     studentIds.length > 0
-      ? supabase.from('submissions').select('id, assignment_id, student_id, content, status, feedback, submitted_at, reviewed_at').in('student_id', studentIds).order('submitted_at', { ascending: false })
+      ? supabase.from('submissions').select('id, assignment_id, student_id, content, status, feedback, grade, submitted_at, reviewed_at').in('student_id', studentIds).order('submitted_at', { ascending: false })
       : Promise.resolve({ data: [] }),
   ])
 
@@ -112,6 +113,7 @@ export default async function MentorDashboard({
             <p className="text-sm text-nexus-muted mt-0.5">Welcome back, {user.name.split(' ')[0]}</p>
           </div>
           <div className="flex items-center gap-3">
+            <CreateAssignmentForm students={studentStats.map(s => ({ id: s.id, name: s.name }))} />
             <div className="w-10 h-10 rounded-full bg-pink-600 text-white flex items-center justify-center font-bold text-sm shrink-0">
               {user.name.charAt(0)}
             </div>
@@ -302,11 +304,18 @@ export default async function MentorDashboard({
                   <ReviewForm submissionId={selected.id} />
                 ) : (
                   <div className="flex flex-col gap-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-950 text-emerald-600 rounded-xl flex items-center justify-center">
-                        <CheckCircle size={16} />
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-950 text-emerald-600 rounded-xl flex items-center justify-center">
+                          <CheckCircle size={16} />
+                        </div>
+                        <span className="font-extrabold text-nexus-text">Already Reviewed</span>
                       </div>
-                      <span className="font-extrabold text-nexus-text">Already Reviewed</span>
+                      {selected.grade && (
+                        <div className="w-11 h-11 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-extrabold text-base shrink-0">
+                          {selected.grade}
+                        </div>
+                      )}
                     </div>
                     <div className="text-sm leading-relaxed text-nexus-text bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 rounded-xl p-4 whitespace-pre-wrap">
                       {selected.feedback}

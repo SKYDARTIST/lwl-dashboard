@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getUser } from '@/lib/auth'
 import { getSupabase } from '@/lib/supabase/server'
+import { validateReviewInput } from '@/lib/review-validation'
 
 export async function POST(
   req: NextRequest,
@@ -12,16 +13,22 @@ export async function POST(
   }
 
   const { id } = await params
-  const { feedback } = await req.json()
+  const body = await req.json()
+  const result = validateReviewInput(body)
 
-  if (!feedback?.trim()) {
-    return NextResponse.json({ error: 'Feedback is required' }, { status: 400 })
+  if (!result.ok) {
+    return NextResponse.json({ error: result.error }, { status: result.status })
   }
 
   const supabase = getSupabase()
   const { data, error } = await supabase
     .from('submissions')
-    .update({ status: 'reviewed', feedback: feedback.trim(), reviewed_at: new Date().toISOString() })
+    .update({
+      status: 'reviewed',
+      feedback: result.feedback,
+      grade: result.grade,
+      reviewed_at: new Date().toISOString(),
+    })
     .eq('id', id)
     .select()
     .single()

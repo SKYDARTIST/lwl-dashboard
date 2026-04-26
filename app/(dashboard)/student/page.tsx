@@ -31,6 +31,7 @@ export default async function StudentDashboard({
       submission_id: sub?.id ?? null,
       submitted_content: sub?.content ?? null,
       feedback: sub?.feedback ?? null,
+      grade: sub?.grade ?? null,
       reviewed_at: sub?.reviewed_at ?? null,
     }
   })
@@ -168,19 +169,26 @@ export default async function StudentDashboard({
 
                 {selected.status === 'reviewed' && selected.feedback && (
                   <div className="flex flex-col gap-4 h-full">
-                    {/* Reviewed badge */}
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-emerald-500 text-white rounded-xl flex items-center justify-center shrink-0">
-                        <CheckCircle size={16} />
+                    {/* Reviewed badge + grade */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-emerald-500 text-white rounded-xl flex items-center justify-center shrink-0">
+                          <CheckCircle size={16} />
+                        </div>
+                        <div>
+                          <div className="font-extrabold text-nexus-text text-sm">Reviewed</div>
+                          {selected.reviewed_at && (
+                            <div className="text-xs text-nexus-muted">
+                              {new Date(selected.reviewed_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <div>
-                        <div className="font-extrabold text-nexus-text text-sm">Reviewed</div>
-                        {selected.reviewed_at && (
-                          <div className="text-xs text-nexus-muted">
-                            {new Date(selected.reviewed_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                          </div>
-                        )}
-                      </div>
+                      {selected.grade && (
+                        <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-extrabold text-lg shrink-0">
+                          {selected.grade}
+                        </div>
+                      )}
                     </div>
 
                     {/* Feedback label */}

@@ -8,6 +8,7 @@ type Submission = {
   id: string
   content: string
   feedback: string | null
+  grade: string | null
 }
 
 type Assignment = {
@@ -127,9 +128,16 @@ export function StudentDetailSection({ student, assignments, selectedFilter }: P
               {/* Feedback */}
               {modal.submission?.feedback && (
                 <div>
-                  <div className="flex items-center gap-1.5 mb-2">
-                    <CheckCircle size={12} className="text-emerald-500" />
-                    <div className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">Your Feedback</div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-1.5">
+                      <CheckCircle size={12} className="text-emerald-500" />
+                      <div className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">Your Feedback</div>
+                    </div>
+                    {modal.submission.grade && (
+                      <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-extrabold text-sm shrink-0">
+                        {modal.submission.grade}
+                      </div>
+                    )}
                   </div>
                   <div className="text-sm text-nexus-text bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 rounded-xl p-4 leading-relaxed whitespace-pre-wrap">
                     {modal.submission.feedback}

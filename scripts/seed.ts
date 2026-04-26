@@ -89,6 +89,7 @@ async function seed() {
       content: 'I built the counter using useState. The increment adds 1, decrement subtracts 1 with a minimum of 0, and reset sets it back to 0. I learned that useState re-renders the component every time state changes, which is why the UI stays in sync automatically.',
       status: 'reviewed',
       feedback: 'Good work implementing all three controls. One thing to note: consider adding a minimum bound to prevent negative counts — real-world counters rarely go below zero. Your explanation of re-renders is accurate. Keep it up.',
+      grade: 'B+',
       reviewed_at: new Date().toISOString(),
     },
     {
@@ -103,6 +104,7 @@ async function seed() {
       content: 'Callbacks are functions passed into other functions. Promises are objects that represent future values with .then() and .catch(). Async/await is syntactic sugar over promises that makes async code read like sync code. Example: const data = await fetch(url).then(r => r.json()).',
       status: 'reviewed',
       feedback: 'Great explanation of the progression from callbacks to async/await. Your code example is correct. Next step: explore Promise.all() for running multiple async operations in parallel. Overall: solid understanding.',
+      grade: 'A',
       reviewed_at: new Date().toISOString(),
     },
     {
@@ -111,6 +113,7 @@ async function seed() {
       content: 'I used display: flex on the container, flex-wrap: wrap, and each card has flex: 1 1 calc(33% - 1rem). On mobile I used a media query to set flex-direction: column. The layout works well on all screen sizes I tested.',
       status: 'reviewed',
       feedback: 'Well done! The calc() approach for card widths is exactly right. One improvement: use gap instead of margin on cards for cleaner spacing. Your mobile media query is correct. Full marks.',
+      grade: 'A',
       reviewed_at: new Date().toISOString(),
     },
     {
@@ -131,6 +134,7 @@ async function seed() {
       content: 'class Stack:\n  def __init__(self): self.items = []\n  def push(self, item): self.items.append(item)\n  def pop(self): return self.items.pop()\n  def is_empty(self): return len(self.items) == 0\nQueue implemented similarly with append and pop(0).',
       status: 'reviewed',
       feedback: 'Stack implementation is correct. For Queue, pop(0) works but is O(n). In production use collections.deque for O(1) popleft(). Your test cases cover the happy path — add edge cases like popping from an empty stack. Good work overall.',
+      grade: 'B',
       reviewed_at: new Date().toISOString(),
     },
     {
