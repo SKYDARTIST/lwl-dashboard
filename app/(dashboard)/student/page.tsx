@@ -167,7 +167,7 @@ export default async function StudentDashboard({
                   </div>
                 )}
 
-                {selected.status === 'reviewed' && selected.feedback && (
+                {selected.status === 'reviewed' && (
                   <div className="flex flex-col gap-4 h-full">
                     {/* Reviewed badge + grade */}
                     <div className="flex items-center justify-between">

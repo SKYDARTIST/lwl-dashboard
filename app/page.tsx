@@ -23,8 +23,8 @@ export default function LandingPage() {
         </div>
 
         <h1 className="anim-2 text-5xl md:text-7xl font-extrabold tracking-[-2px] leading-[1.05] mb-6 text-nexus-text">
-          Where mentors shape<br />
-          <span className="text-gradient-accent">the future.</span>
+          Submit work.<br />
+          <span className="text-gradient-accent">Get feedback. Grow.</span>
         </h1>
 
         <p className="anim-3 text-lg text-nexus-muted mb-14 max-w-xl leading-relaxed">

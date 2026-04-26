@@ -83,7 +83,7 @@ export function ReviewForm({ submissionId }: { submissionId: string }) {
       <button
         type="submit"
         disabled={loading || !feedback.trim()}
-        className="mt-auto bg-pink-600 text-white font-bold py-3.5 rounded-2xl hover:bg-pink-700 transition disabled:opacity-50 cursor-pointer"
+        className="mt-auto bg-pink-600 text-white font-bold py-3.5 rounded-2xl hover:bg-pink-700 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
       >
         {loading ? 'Submitting…' : 'Mark as Reviewed'}
       </button>

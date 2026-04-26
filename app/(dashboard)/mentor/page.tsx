@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { FileText, Users, Inbox, CheckCircle } from 'lucide-react'
+import { FileText, Users, Inbox, CheckCircle, X } from 'lucide-react'
 import { getUser } from '@/lib/auth'
 import { getSupabase } from '@/lib/supabase/server'
 import { ReviewForm } from './ReviewForm'
@@ -205,7 +205,6 @@ export default async function MentorDashboard({
             <StudentDetailSection
               student={studentDetail.student}
               assignments={studentDetail.assignments}
-              selectedFilter={selectedFilter}
             />
           </section>
         )}
@@ -216,8 +215,8 @@ export default async function MentorDashboard({
             <div className="flex items-center gap-3">
               <h2 className="text-[22px] font-extrabold tracking-tight text-nexus-text">Review Queue</h2>
               {selectedStudentId && (
-                <Link href="/mentor" className="text-xs text-indigo-500 hover:text-indigo-400 font-semibold transition">
-                  ✕ Clear filter
+                <Link href="/mentor" className="flex items-center gap-1 text-xs text-indigo-500 hover:text-indigo-400 font-semibold transition">
+                  <X size={11} />Clear filter
                 </Link>
               )}
             </div>

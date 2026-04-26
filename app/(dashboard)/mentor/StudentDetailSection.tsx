@@ -22,7 +22,6 @@ type Assignment = {
 type Props = {
   student: { id: string; name: string }
   assignments: Assignment[]
-  selectedFilter: string | null
 }
 
 const styleMap = {
@@ -31,7 +30,7 @@ const styleMap = {
   reviewed:  { badge: 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400', dot: 'bg-emerald-500' },
 }
 
-export function StudentDetailSection({ student, assignments, selectedFilter }: Props) {
+export function StudentDetailSection({ student, assignments }: Props) {
   const [modal, setModal] = useState<Assignment | null>(null)
 
   return (
@@ -147,10 +146,10 @@ export function StudentDetailSection({ student, assignments, selectedFilter }: P
             </div>
 
             {/* Modal footer */}
-            {modal.status === 'submitted' && (
+            {modal.status === 'submitted' && modal.submission && (
               <div className="p-7 pt-4 border-t border-nexus-border">
                 <Link
-                  href={`/mentor?st=${student.id}&s=${modal.submission!.id}#review`}
+                  href={`/mentor?st=${student.id}&s=${modal.submission.id}#review`}
                   onClick={() => setModal(null)}
                   className="inline-flex items-center gap-2 bg-pink-600 text-white text-sm font-bold px-5 py-3 rounded-xl hover:bg-pink-700 transition cursor-pointer"
                 >
