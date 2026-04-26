@@ -8,7 +8,7 @@ import { ReviewForm } from './ReviewForm'
 export default async function MentorDashboard({
   searchParams,
 }: {
-  searchParams: Promise<{ s?: string; st?: string }>
+  searchParams: Promise<{ s?: string; st?: string; filter?: string }>
 }) {
   const user = await getUser()
   if (!user) redirect('/login')
@@ -61,6 +61,7 @@ export default async function MentorDashboard({
 
   // Selected student filter
   const selectedStudentId = params.st ?? null
+  const selectedFilter = (params.filter ?? null) as 'pending' | 'submitted' | 'reviewed' | null
 
   // Full assignment breakdown for selected student
   const studentDetail = selectedStudentId
@@ -71,7 +72,8 @@ export default async function MentorDashboard({
           .map(a => {
             const sub = (submissions ?? []).find(s => s.assignment_id === a.id) ?? null
             return { ...a, status: (sub?.status ?? 'pending') as 'pending' | 'submitted' | 'reviewed', submission: sub }
-          }),
+          })
+          .filter(a => !selectedFilter || a.status === selectedFilter),
       }
     : null
 
@@ -146,10 +148,23 @@ export default async function MentorDashboard({
                       {s.name.charAt(0)}
                     </div>
                     <div className="font-bold text-[15px] flex-[2] text-nexus-text">{s.name}</div>
-                    <div className="flex gap-4 text-[12px] font-semibold flex-[2]">
-                      <span className="text-amber-600 dark:text-amber-400">{s.pending} pending</span>
-                      <span className="text-blue-600 dark:text-blue-400">{s.submitted} to review</span>
-                      <span className="text-emerald-600 dark:text-emerald-400">{s.reviewed} reviewed</span>
+                    <div className="flex gap-2 text-[12px] font-semibold flex-[2]" onClick={e => e.preventDefault()}>
+                      {[
+                        { label: `${s.pending} pending`,   filter: 'pending',   cls: 'text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-950/40' },
+                        { label: `${s.submitted} to review`, filter: 'submitted', cls: 'text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-950/40' },
+                        { label: `${s.reviewed} reviewed`,  filter: 'reviewed',  cls: 'text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/40' },
+                      ].map(({ label, filter, cls }) => {
+                        const isActive = selectedStudentId === s.id && selectedFilter === filter
+                        return (
+                          <Link
+                            key={filter}
+                            href={isActive ? `/mentor?st=${s.id}` : `/mentor?st=${s.id}&filter=${filter}`}
+                            className={`px-2 py-0.5 rounded-lg transition-colors ${cls} ${isActive ? 'ring-1 ring-current' : ''}`}
+                          >
+                            {label}
+                          </Link>
+                        )
+                      })}
                     </div>
                     <div className="text-xs text-nexus-muted">{s.total} assignments</div>
                   </Link>
@@ -162,9 +177,19 @@ export default async function MentorDashboard({
         {/* Student detail — shown when a student row is selected */}
         {studentDetail && studentDetail.student && (
           <section>
-            <h2 className="text-[22px] font-extrabold tracking-tight text-nexus-text mb-5">
-              {studentDetail.student.name}&apos;s Assignments
-            </h2>
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-[22px] font-extrabold tracking-tight text-nexus-text">
+                {studentDetail.student.name}&apos;s Assignments
+                {selectedFilter && (
+                  <span className="ml-2 text-sm font-semibold text-nexus-muted capitalize">— {selectedFilter === 'submitted' ? 'to review' : selectedFilter}</span>
+                )}
+              </h2>
+              {selectedFilter && (
+                <Link href={`/mentor?st=${studentDetail.student.id}`} className="text-xs text-indigo-500 hover:text-indigo-400 font-semibold transition">
+                  Show all
+                </Link>
+              )}
+            </div>
             <div className="flex flex-col gap-2">
               {studentDetail.assignments.map(a => {
                 const styleMap = {
