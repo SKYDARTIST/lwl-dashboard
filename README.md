@@ -126,13 +126,9 @@ Both sides have light and dark mode.
 
 ## What I kept out
 
-I didn't cut features from the brief — everything that was asked for is in there. What I kept out was things that would've added complexity without improving the core loop:
+Everything in the brief is built. The items I left out were the ones the brief itself flagged as out of scope — sign-up flow, real-time updates, file uploads, search and pagination. Those weren't judgment calls, they were already ruled out.
 
-- **Sign-up / password reset** — not in scope, seeded users only
-- **Real-time updates** — the page refreshes after every action, which is enough for this use case
-- **File uploads** — text only as specified
-- **Search / pagination** — with 6 students and 12 assignments the data is small enough that filtering by clicking a student row is sufficient
-- **Due dates** — I thought about this but it would have needed schema changes, timezone handling, and submission blocking logic. Kept scope tight.
+The one thing I considered adding beyond the brief was per-assignment due dates. Decided against it — it would've needed a schema change, timezone handling, and server-side submission blocking. Not worth the risk of breaking something that was already working cleanly.
 
 ---
 
