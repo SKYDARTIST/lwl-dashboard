@@ -110,7 +110,7 @@ export default async function MentorDashboard({
           ) : (
             <div className="flex flex-col gap-2">
               {studentStats.map(s => (
-                <div key={s.id} className="flex items-center p-4 px-5 bg-nexus-card rounded-xl border border-nexus-border">
+                <div key={s.id} className="flex items-center p-4 px-5 bg-nexus-card rounded-xl border border-nexus-border hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors">
                   <div className="w-11 h-11 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-600 flex items-center justify-center mr-4 font-bold text-sm shrink-0">
                     {s.name.charAt(0)}
                   </div>
@@ -150,7 +150,7 @@ export default async function MentorDashboard({
                 return (
                   <Link
                     key={sub.id}
-                    href={`/mentor?s=${sub.id}`}
+                    href={`/mentor?s=${sub.id}#review`}
                     className={`flex items-center p-4 px-5 rounded-xl border transition-all cursor-pointer hover:-translate-y-0.5 hover:shadow-md ${
                       isSelected
                         ? 'bg-pink-50 dark:bg-pink-950/20 border-pink-300 dark:border-pink-900'
@@ -175,7 +175,7 @@ export default async function MentorDashboard({
 
         {/* Review panel */}
         {selected && (
-          <section>
+          <section id="review">
             <h2 className="text-[22px] font-extrabold tracking-tight text-nexus-text mb-5">
               Reviewing: {selected.assignment?.title ?? '—'}
             </h2>
@@ -259,7 +259,7 @@ export default async function MentorDashboard({
             <h3 className="text-base font-extrabold mb-4 text-nexus-text">Pending Reviews</h3>
             <div className="flex flex-col gap-3">
               {queue.map(sub => (
-                <Link key={sub.id} href={`/mentor?s=${sub.id}`} className="flex items-center gap-3 group cursor-pointer">
+                <Link key={sub.id} href={`/mentor?s=${sub.id}#review`} className="flex items-center gap-3 group cursor-pointer">
                   <div className="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-950 text-blue-600 flex items-center justify-center shrink-0">
                     <FileText size={14} />
                   </div>
