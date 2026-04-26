@@ -149,11 +149,14 @@ async function seed() {
   console.log('✅ Submissions created')
   console.log('\n🎉 Seed complete!')
   console.log('\nLogin credentials:')
-  console.log('  Mentor  → priya@lwl.edu / mentor123')
-  console.log('  Mentor  → ravi@lwl.edu  / mentor123')
+  console.log('  Mentor  → priya@lwl.edu  / mentor123  (students: Aarav, Meera, Kabir)')
+  console.log('  Mentor  → ravi@lwl.edu   / mentor123  (students: Ananya, Dev, Zara)')
   console.log('  Student → aarav@lwl.edu  / student123')
   console.log('  Student → meera@lwl.edu  / student123')
   console.log('  Student → kabir@lwl.edu  / student123')
+  console.log('  Student → ananya@lwl.edu / student123')
+  console.log('  Student → dev@lwl.edu    / student123')
+  console.log('  Student → zara@lwl.edu   / student123')
 }
 
 seed().catch(console.error)
