@@ -36,7 +36,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Sidebar */}
       <nav className="w-[90px] bg-nexus-sidebar flex flex-col items-center py-8 gap-8 shrink-0 z-10 text-white">
-        <Link href={isStudent ? "/student" : "/mentor"} className="opacity-100 bg-white text-black p-3 rounded-2xl transition">
+        <Link
+          href={isStudent ? "/student" : "/mentor"}
+          title="Back to Dashboard"
+          className="opacity-100 bg-white text-black p-3 rounded-2xl transition hover:scale-110 hover:shadow-lg active:scale-95"
+        >
           <Home size={24} />
         </Link>
 
