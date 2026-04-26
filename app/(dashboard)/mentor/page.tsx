@@ -178,7 +178,7 @@ export default async function MentorDashboard({
                         )
                       })}
                     </div>
-                    <div className="text-xs text-nexus-muted">{s.total} assignments</div>
+                    <div className="text-xs text-nexus-muted">{s.total} {s.total === 1 ? 'assignment' : 'assignments'}</div>
                   </div>
                 )
               })}
@@ -253,7 +253,7 @@ export default async function MentorDashboard({
                       <div className="font-bold text-[15px] text-nexus-text">{sub.assignment?.title ?? '—'}</div>
                       <div className="text-xs text-nexus-muted mt-0.5">by {sub.student?.name ?? '—'}</div>
                     </div>
-                    <div className="text-[13px] line-clamp-1 flex-[2] text-nexus-muted hidden md:block">{sub.content}</div>
+                    <div className="text-[13px] line-clamp-2 flex-[2] text-nexus-muted hidden md:block min-w-0">{sub.content}</div>
                     <div className="text-xs font-semibold text-pink-600 dark:text-pink-400 ml-4 shrink-0">Review →</div>
                   </Link>
                 )
