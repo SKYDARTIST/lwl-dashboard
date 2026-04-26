@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { X, CheckCircle } from 'lucide-react'
+import { X, CheckCircle, Expand } from 'lucide-react'
 
 type Submission = {
   id: string
@@ -42,7 +42,7 @@ export function StudentDetailSection({ student, assignments }: Props) {
             <button
               key={a.id}
               onClick={() => setModal(a)}
-              className="bg-nexus-card border border-nexus-border rounded-xl p-4 px-5 flex flex-col gap-2 text-left cursor-pointer hover:border-indigo-400 dark:hover:border-indigo-600 hover:shadow-md transition-all"
+              className="group bg-nexus-card border border-nexus-border rounded-xl p-4 px-5 flex flex-col gap-2 text-left cursor-pointer hover:border-indigo-400 dark:hover:border-indigo-600 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20 hover:shadow-md transition-all"
             >
               <div className="flex items-center justify-between">
                 <div className="font-bold text-[15px] text-nexus-text">{a.title}</div>
@@ -68,7 +68,10 @@ export function StudentDetailSection({ student, assignments }: Props) {
                   </div>
                 </div>
               )}
-              <div className="text-[11px] text-indigo-500 font-semibold mt-1">Click to expand →</div>
+              <div className="flex items-center gap-1.5 mt-1 text-[11px] font-bold text-indigo-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                <Expand size={11} />
+                View details
+              </div>
             </button>
           )
         })}

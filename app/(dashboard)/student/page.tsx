@@ -22,7 +22,6 @@ export default async function StudentDashboard({
     supabase.from('submissions').select('*').eq('student_id', user.id),
   ])
 
-  // Compute status for each assignment
   const merged = (assignments ?? []).map(a => {
     const sub = (submissions ?? []).find(s => s.assignment_id === a.id)
     return {
@@ -43,14 +42,13 @@ export default async function StudentDashboard({
   const done = submitted + reviewed
   const progressPct = total > 0 ? Math.round((done / total) * 100) : 0
 
-  // Selected assignment — default to first pending, else first
   const defaultId = merged.find(a => a.status === 'pending')?.id ?? merged[0]?.id
   const selectedId = params.a ?? defaultId
   const selected = merged.find(a => a.id === selectedId) ?? null
 
   return (
     <>
-      {/* Center column */}
+      {/* Center column — list only */}
       <main className="flex-[6] p-10 overflow-y-auto flex flex-col gap-8 bg-nexus-card custom-scrollbar">
 
         {/* Header */}
@@ -66,6 +64,27 @@ export default async function StudentDashboard({
             <span className="font-bold text-[15px] text-nexus-text">{user.name.split(' ')[0]}</span>
           </div>
         </header>
+
+        {/* Compact progress strip */}
+        <div className="flex items-center gap-6 px-5 py-3.5 bg-nexus-bg-main border border-nexus-border rounded-2xl">
+          {[
+            { label: 'Pending',   count: pending,   dot: 'bg-amber-500'   },
+            { label: 'Submitted', count: submitted, dot: 'bg-blue-500'    },
+            { label: 'Reviewed',  count: reviewed,  dot: 'bg-emerald-500' },
+          ].map(({ label, count, dot }) => (
+            <div key={label} className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${dot}`} />
+              <span className="text-xs text-nexus-muted font-medium">{label}</span>
+              <span className="text-xs font-extrabold text-nexus-text">{count}</span>
+            </div>
+          ))}
+          <div className="flex-1 flex items-center gap-3 ml-2">
+            <div className="flex-1 h-1.5 bg-nexus-border rounded-full overflow-hidden">
+              <div className="h-full bg-indigo-500 rounded-full transition-all duration-700" style={{ width: `${progressPct}%` }} />
+            </div>
+            <span className="text-xs font-bold text-nexus-text shrink-0">{progressPct}%</span>
+          </div>
+        </div>
 
         {/* Assignments list */}
         <section>
@@ -93,7 +112,7 @@ export default async function StudentDashboard({
                 return (
                   <Link
                     key={a.id}
-                    href={`/student?a=${a.id}#detail`}
+                    href={`/student?a=${a.id}`}
                     className={`flex items-center p-4 px-5 rounded-xl border transition-all cursor-pointer hover:-translate-y-0.5 hover:shadow-md ${
                       isSelected ? statusStyles.row : 'border-nexus-border bg-nexus-card'
                     }`}
@@ -102,7 +121,7 @@ export default async function StudentDashboard({
                       <FileText size={18} />
                     </div>
                     <div className="font-bold text-[15px] flex-[2] text-nexus-text">{a.title}</div>
-                    <div className="text-nexus-muted text-[13px] flex-[2.5] line-clamp-1 hidden md:block">{a.description}</div>
+                    <div className="text-nexus-muted text-[13px] flex-[2.5] line-clamp-1 min-w-0 hidden md:block">{a.description}</div>
                     <div className={`font-semibold text-[12px] flex-none flex items-center gap-1.5 px-3 py-1.5 rounded-full ml-4 ${statusStyles.badge}`}>
                       <div className={`w-1.5 h-1.5 rounded-full ${statusStyles.dot}`} />
                       {a.status.charAt(0).toUpperCase() + a.status.slice(1)}
@@ -113,149 +132,91 @@ export default async function StudentDashboard({
             </div>
           )}
         </section>
-
-        {/* Assignment detail */}
-        {selected && (
-          <section id="detail">
-            <h2 className="text-[22px] font-extrabold tracking-tight text-nexus-text mb-5">
-              {selected.status === 'pending' ? 'Submit Your Work' :
-               selected.status === 'submitted' ? 'Awaiting Review' : 'Mentor Feedback'}
-            </h2>
-
-            <div className="flex gap-6">
-              {/* Left: assignment info + submitted answer */}
-              <div className="bg-nexus-bg-main border border-nexus-border rounded-[28px] p-7 flex-1 flex flex-col gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-950 text-indigo-600 rounded-2xl flex items-center justify-center shrink-0">
-                    <FileText size={22} />
-                  </div>
-                  <div>
-                    <div className="font-extrabold text-nexus-text">{selected.title}</div>
-                    <div className="text-xs text-nexus-muted mt-0.5 capitalize">{selected.status}</div>
-                  </div>
-                </div>
-
-                <div className="text-sm leading-relaxed text-nexus-text">{selected.description}</div>
-
-                {selected.submitted_content && (
-                  <div className="mt-1">
-                    <div className="text-xs font-extrabold uppercase tracking-widest text-nexus-muted mb-2">Your Answer</div>
-                    <div className="text-sm leading-relaxed text-nexus-text bg-nexus-card border border-nexus-border rounded-xl p-4 whitespace-pre-wrap">
-                      {selected.submitted_content}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Right: action area */}
-              <div className="bg-nexus-bg-panel rounded-[28px] p-7 flex-1 flex flex-col gap-4">
-                {selected.status === 'pending' && (
-                  <SubmitForm assignmentId={selected.id} />
-                )}
-
-                {selected.status === 'submitted' && (
-                  <div className="flex flex-col items-center justify-center h-full gap-4 text-center py-8">
-                    <div className="w-16 h-16 bg-blue-100 dark:bg-blue-950 text-blue-500 rounded-full flex items-center justify-center">
-                      <Clock size={28} />
-                    </div>
-                    <div>
-                      <div className="font-extrabold text-nexus-text mb-1">Work Submitted</div>
-                      <div className="text-sm text-nexus-muted max-w-[200px]">
-                        Your work has been submitted and is waiting for mentor feedback.
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {selected.status === 'reviewed' && (
-                  <div className="flex flex-col gap-4 h-full">
-                    {/* Reviewed badge + grade */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-emerald-500 text-white rounded-xl flex items-center justify-center shrink-0">
-                          <CheckCircle size={16} />
-                        </div>
-                        <div>
-                          <div className="font-extrabold text-nexus-text text-sm">Reviewed</div>
-                          {selected.reviewed_at && (
-                            <div className="text-xs text-nexus-muted">
-                              {new Date(selected.reviewed_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      {selected.grade && (
-                        <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-extrabold text-lg shrink-0">
-                          {selected.grade}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Feedback label */}
-                    <div className="text-xs font-extrabold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
-                      Mentor Feedback
-                    </div>
-
-                    {/* Feedback text — distinct card, not a box */}
-                    <div className="flex-1 rounded-2xl border-l-4 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 px-5 py-4">
-                      <p className="text-sm leading-relaxed text-nexus-text whitespace-pre-wrap">{selected.feedback}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </section>
-        )}
       </main>
 
-      {/* Right panel */}
-      <aside className="flex-[3.5] bg-nexus-bg-panel rounded-[40px] m-4 mr-0 p-8 flex flex-col gap-6 overflow-y-auto custom-scrollbar">
-        <div>
-          <h3 className="text-lg font-extrabold mb-5 text-nexus-text">My Progress</h3>
-
-          {[
-            { label: 'Pending',   count: pending,   dot: 'bg-amber-500'   },
-            { label: 'Submitted', count: submitted, dot: 'bg-blue-500'    },
-            { label: 'Reviewed',  count: reviewed,  dot: 'bg-emerald-500' },
-          ].map(({ label, count, dot }) => (
-            <div key={label} className="flex items-center justify-between text-sm mb-3">
-              <div className="flex items-center gap-2">
-                <div className={`w-2.5 h-2.5 rounded-full ${dot}`} />
-                <span className="text-nexus-muted font-medium">{label}</span>
+      {/* Right panel — assignment detail */}
+      <aside className="flex-[3.5] bg-nexus-bg-panel rounded-[40px] m-4 mr-0 p-8 flex flex-col gap-5 overflow-y-auto custom-scrollbar">
+        {selected ? (
+          <>
+            {/* Detail header */}
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-950 text-indigo-600 rounded-2xl flex items-center justify-center shrink-0">
+                  <FileText size={18} />
+                </div>
+                <div className="min-w-0">
+                  <div className="font-extrabold text-nexus-text text-[15px] leading-snug">{selected.title}</div>
+                  <div className="text-xs text-nexus-muted mt-0.5 capitalize">{selected.status}</div>
+                </div>
               </div>
-              <span className="font-extrabold text-nexus-text">{count}</span>
+              {selected.grade && (
+                <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-extrabold text-sm shrink-0">
+                  {selected.grade}
+                </div>
+              )}
             </div>
-          ))}
 
-          <div className="flex justify-between text-[13px] font-bold mb-2 mt-5">
-            <span className="text-nexus-muted">Overall</span>
-            <span className="text-nexus-text">{progressPct}%</span>
-          </div>
-          <div className="w-full h-2 bg-nexus-border rounded-full overflow-hidden">
-            <div className="h-full bg-indigo-500 rounded-full transition-all duration-700" style={{ width: `${progressPct}%` }} />
-          </div>
-        </div>
+            {/* Assignment description */}
+            <div className="bg-nexus-card border border-nexus-border rounded-2xl p-4">
+              <div className="text-[10px] font-extrabold uppercase tracking-widest text-nexus-muted mb-2">Assignment</div>
+              <p className="text-sm leading-relaxed text-nexus-text">{selected.description}</p>
+            </div>
 
-        <div className="mt-4">
-          <h3 className="text-base font-extrabold mb-4 text-nexus-text">All Assignments</h3>
-          <div className="flex flex-col gap-3">
-            {merged.map(a => (
-              <Link key={a.id} href={`/student?a=${a.id}#detail`} className="flex items-center gap-3 group cursor-pointer">
-                <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
-                  a.status === 'pending'   ? 'bg-amber-100   dark:bg-amber-950   text-amber-600'   :
-                  a.status === 'submitted' ? 'bg-blue-100    dark:bg-blue-950    text-blue-600'    :
-                                             'bg-emerald-100 dark:bg-emerald-950 text-emerald-600'
-                }`}>
-                  <FileText size={14} />
+            {/* Submitted content */}
+            {selected.submitted_content && (
+              <div className="bg-nexus-card border border-nexus-border rounded-2xl p-4">
+                <div className="text-[10px] font-extrabold uppercase tracking-widest text-nexus-muted mb-2">Your Answer</div>
+                <p className="text-sm leading-relaxed text-nexus-text whitespace-pre-wrap">{selected.submitted_content}</p>
+              </div>
+            )}
+
+            {/* Action area */}
+            {selected.status === 'pending' && (
+              <SubmitForm assignmentId={selected.id} />
+            )}
+
+            {selected.status === 'submitted' && (
+              <div className="flex flex-col items-center justify-center py-8 gap-4 text-center">
+                <div className="w-14 h-14 bg-blue-100 dark:bg-blue-950 text-blue-500 rounded-full flex items-center justify-center">
+                  <Clock size={24} />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-bold text-nexus-text truncate group-hover:text-indigo-500 transition">{a.title}</div>
-                  <div className="text-xs text-nexus-muted capitalize">{a.status}</div>
+                <div>
+                  <div className="font-extrabold text-nexus-text mb-1">Work Submitted</div>
+                  <div className="text-sm text-nexus-muted">Waiting for mentor feedback.</div>
                 </div>
-              </Link>
-            ))}
+              </div>
+            )}
+
+            {selected.status === 'reviewed' && (
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 bg-emerald-500 text-white rounded-lg flex items-center justify-center shrink-0">
+                    <CheckCircle size={14} />
+                  </div>
+                  <div>
+                    <div className="font-extrabold text-nexus-text text-sm">Reviewed</div>
+                    {selected.reviewed_at && (
+                      <div className="text-xs text-nexus-muted">
+                        {new Date(selected.reviewed_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+                  Mentor Feedback
+                </div>
+                <div className="rounded-2xl border-l-4 border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 px-4 py-3">
+                  <p className="text-sm leading-relaxed text-nexus-text whitespace-pre-wrap">{selected.feedback}</p>
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-full gap-3 text-nexus-muted">
+            <BookOpen size={32} className="opacity-30" />
+            <p className="text-sm">No assignments yet.</p>
           </div>
-        </div>
+        )}
       </aside>
     </>
   )
