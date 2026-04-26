@@ -4,6 +4,7 @@ import { FileText, Users, Inbox, CheckCircle } from 'lucide-react'
 import { getUser } from '@/lib/auth'
 import { getSupabase } from '@/lib/supabase/server'
 import { ReviewForm } from './ReviewForm'
+import { StudentDetailSection } from './StudentDetailSection'
 
 export default async function MentorDashboard({
   searchParams,
@@ -199,52 +200,11 @@ export default async function MentorDashboard({
                 </Link>
               )}
             </div>
-            <div className="flex flex-col gap-2">
-              {studentDetail.assignments.map(a => {
-                const styleMap = {
-                  pending:   { badge: 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400', dot: 'bg-amber-500' },
-                  submitted: { badge: 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-400',     dot: 'bg-blue-500'   },
-                  reviewed:  { badge: 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400', dot: 'bg-emerald-500' },
-                }
-                const style = styleMap[a.status]
-                return (
-                  <div key={a.id} className="bg-nexus-card border border-nexus-border rounded-xl p-4 px-5 flex flex-col gap-2">
-                    <div className="flex items-center justify-between">
-                      <div className="font-bold text-[15px] text-nexus-text">{a.title}</div>
-                      <span className={`text-[11px] font-bold flex items-center gap-1.5 px-3 py-1 rounded-full ${style.badge}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />
-                        {a.status.charAt(0).toUpperCase() + a.status.slice(1)}
-                      </span>
-                    </div>
-                    <div className="text-xs text-nexus-muted leading-relaxed">{a.description}</div>
-                    {a.submission?.content && (
-                      <div className="mt-1">
-                        <div className="text-[10px] font-extrabold uppercase tracking-widest text-nexus-muted mb-1">Submission</div>
-                        <div className="text-xs text-nexus-text bg-nexus-bg-main border border-nexus-border rounded-lg px-3 py-2 line-clamp-2">
-                          {a.submission.content}
-                        </div>
-                      </div>
-                    )}
-                    {a.submission?.feedback && (
-                      <div className="mt-1">
-                        <div className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-600 dark:text-emerald-400 mb-1">Your Feedback</div>
-                        <div className="text-xs text-nexus-text bg-emerald-50 dark:bg-emerald-950/30 border-l-2 border-emerald-500 rounded-lg px-3 py-2 line-clamp-2">
-                          {a.submission.feedback}
-                        </div>
-                      </div>
-                    )}
-                    {a.status === 'submitted' && (
-                      <Link
-                        href={`/mentor?st=${studentDetail.student!.id}&s=${a.submission!.id}#review`}
-                        className="self-start text-xs font-bold text-pink-600 dark:text-pink-400 hover:text-pink-500 transition mt-1"
-                      >
-                        Review this →
-                      </Link>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
+            <StudentDetailSection
+              student={studentDetail.student}
+              assignments={studentDetail.assignments}
+              selectedFilter={selectedFilter}
+            />
           </section>
         )}
 
