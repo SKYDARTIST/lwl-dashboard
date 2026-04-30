@@ -42,7 +42,7 @@ export function StudentDetailSection({ student, assignments }: Props) {
             <button
               key={a.id}
               onClick={() => setModal(a)}
-              className="group bg-nexus-card border border-nexus-border rounded-xl p-4 px-5 flex flex-col gap-2 text-left cursor-pointer hover:border-indigo-400 dark:hover:border-indigo-600 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20 hover:shadow-md transition-all"
+              className="nexus-row group bg-nexus-card border border-nexus-border rounded-2xl p-4 px-5 flex flex-col gap-2 text-left cursor-pointer hover:-translate-y-0.5 hover:border-indigo-400 dark:hover:border-indigo-600 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20 transition-all"
             >
               <div className="flex items-center justify-between">
                 <div className="font-bold text-[15px] text-nexus-text">{a.title}</div>
@@ -84,7 +84,7 @@ export function StudentDetailSection({ student, assignments }: Props) {
           onClick={() => setModal(null)}
         >
           <div
-            className="bg-nexus-card border border-nexus-border rounded-[28px] w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl"
+            className="nexus-shell bg-nexus-card border border-nexus-border rounded-[28px] w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl"
             onClick={e => e.stopPropagation()}
           >
             {/* Modal header */}

@@ -11,8 +11,10 @@ function ThemeToggleInline() {
     setDark(document.documentElement.classList.contains("dark"));
   }, []);
   function toggle() {
-    document.documentElement.classList.toggle("dark");
-    setDark(d => !d);
+    const next = !dark;
+    document.documentElement.classList.toggle("dark", next);
+    localStorage.setItem("nexus-theme", next ? "dark" : "light");
+    setDark(next);
   }
   return (
     <button onClick={toggle} className="opacity-50 hover:opacity-100 hover:bg-white/10 p-3 rounded-2xl cursor-pointer transition text-white">
@@ -32,10 +34,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="w-full max-w-[1520px] h-[90vh] min-h-[700px] bg-nexus-bg-main rounded-[40px] shadow-2xl flex overflow-hidden">
+    <div className="nexus-shell w-full max-w-[1540px] min-h-[calc(100vh-2.5rem)] bg-nexus-bg-main rounded-[32px] lg:rounded-[40px] flex flex-col lg:flex-row overflow-hidden">
 
       {/* Sidebar */}
-      <nav className="w-[90px] bg-nexus-sidebar flex flex-col items-center py-8 gap-8 shrink-0 z-10 text-white">
+      <nav className="w-full lg:w-[90px] bg-nexus-sidebar flex lg:flex-col items-center justify-between lg:justify-start px-5 py-4 lg:px-0 lg:py-8 gap-4 lg:gap-8 shrink-0 z-10 text-white">
         <Link
           href={isStudent ? "/student" : "/mentor"}
           title="Back to Dashboard"
@@ -44,7 +46,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <Home size={24} />
         </Link>
 
-        <div className="mt-auto flex flex-col gap-6 items-center">
+        <div className="lg:mt-auto flex lg:flex-col gap-3 lg:gap-6 items-center">
           <ThemeToggleInline />
           <button
             onClick={handleLogout}
@@ -56,7 +58,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </nav>
 
       {/* Main content */}
-      <div className="flex-1 flex overflow-hidden bg-nexus-bg-main rounded-l-[40px] -ml-5">
+      <div className="flex-1 flex flex-col xl:flex-row overflow-hidden bg-nexus-bg-main lg:rounded-l-[40px] lg:-ml-5">
         {children}
       </div>
     </div>

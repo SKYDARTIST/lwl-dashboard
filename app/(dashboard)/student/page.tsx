@@ -49,10 +49,10 @@ export default async function StudentDashboard({
   return (
     <>
       {/* Center column — list only */}
-      <main className="flex-[6] p-10 overflow-y-auto flex flex-col gap-8 bg-nexus-card custom-scrollbar">
+      <main className="flex-[6] min-w-0 p-5 sm:p-8 lg:p-10 overflow-y-auto flex flex-col gap-8 bg-nexus-card custom-scrollbar">
 
         {/* Header */}
-        <header className="flex items-center justify-between">
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-[28px] font-extrabold tracking-tight text-nexus-text">Dashboard</h1>
             <p className="text-sm text-nexus-muted mt-0.5">Welcome back, {user.name.split(' ')[0]}</p>
@@ -66,20 +66,20 @@ export default async function StudentDashboard({
         </header>
 
         {/* Compact progress strip */}
-        <div className="flex items-center gap-6 px-5 py-3.5 bg-nexus-bg-main border border-nexus-border rounded-2xl">
+        <div className="nexus-glass flex flex-col gap-4 rounded-[28px] p-5 sm:flex-row sm:items-center sm:gap-6">
           {[
             { label: 'Pending',   count: pending,   dot: 'bg-amber-500'   },
             { label: 'Submitted', count: submitted, dot: 'bg-blue-500'    },
             { label: 'Reviewed',  count: reviewed,  dot: 'bg-emerald-500' },
           ].map(({ label, count, dot }) => (
-            <div key={label} className="flex items-center gap-2">
+            <div key={label} className="flex items-center gap-2 rounded-2xl bg-nexus-card px-3 py-2 border border-nexus-border">
               <div className={`w-2 h-2 rounded-full ${dot}`} />
               <span className="text-xs text-nexus-muted font-medium">{label}</span>
               <span className="text-xs font-extrabold text-nexus-text">{count}</span>
             </div>
           ))}
           <div className="flex-1 flex items-center gap-3 ml-2">
-            <div className="flex-1 h-1.5 bg-nexus-border rounded-full overflow-hidden">
+            <div className="flex-1 h-2 bg-nexus-border rounded-full overflow-hidden">
               <div className="h-full bg-indigo-500 rounded-full transition-all duration-700" style={{ width: `${progressPct}%` }} />
             </div>
             <span className="text-xs font-bold text-nexus-text shrink-0">{progressPct}%</span>
@@ -113,16 +113,20 @@ export default async function StudentDashboard({
                   <Link
                     key={a.id}
                     href={`/student?a=${a.id}`}
-                    className={`flex items-center p-4 px-5 rounded-xl border transition-all cursor-pointer hover:-translate-y-0.5 hover:shadow-md ${
+                    className={`nexus-row flex flex-col gap-3 sm:flex-row sm:items-center p-4 px-5 rounded-2xl border transition-all cursor-pointer hover:-translate-y-0.5 ${
                       isSelected ? statusStyles.row : 'border-nexus-border bg-nexus-card'
                     }`}
                   >
-                    <div className={`w-11 h-11 rounded-full flex items-center justify-center mr-4 shrink-0 ${statusStyles.icon}`}>
-                      <FileText size={18} />
+                    <div className="flex min-w-0 flex-1 items-center">
+                      <div className={`w-11 h-11 rounded-2xl flex items-center justify-center mr-4 shrink-0 ${statusStyles.icon}`}>
+                        <FileText size={18} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="font-bold text-[15px] text-nexus-text">{a.title}</div>
+                        <div className="text-nexus-muted text-[13px] line-clamp-1 min-w-0">{a.description}</div>
+                      </div>
                     </div>
-                    <div className="font-bold text-[15px] flex-[2] text-nexus-text">{a.title}</div>
-                    <div className="text-nexus-muted text-[13px] flex-[2.5] line-clamp-1 min-w-0 hidden md:block">{a.description}</div>
-                    <div className={`font-semibold text-[12px] flex-none flex items-center gap-1.5 px-3 py-1.5 rounded-full ml-4 ${statusStyles.badge}`}>
+                    <div className={`font-semibold text-[12px] flex-none flex items-center gap-1.5 px-3 py-1.5 rounded-full sm:ml-4 w-fit ${statusStyles.badge}`}>
                       <div className={`w-1.5 h-1.5 rounded-full ${statusStyles.dot}`} />
                       {a.status.charAt(0).toUpperCase() + a.status.slice(1)}
                     </div>
@@ -135,7 +139,7 @@ export default async function StudentDashboard({
       </main>
 
       {/* Right panel — assignment detail */}
-      <aside className="flex-[3.5] bg-nexus-bg-panel rounded-[40px] m-4 mr-0 p-8 flex flex-col gap-5 overflow-y-auto custom-scrollbar">
+      <aside className="w-full xl:flex-[3.5] xl:max-w-[440px] bg-nexus-bg-panel xl:rounded-[40px] m-0 xl:m-4 xl:mr-0 p-5 sm:p-8 flex flex-col gap-5 overflow-y-auto custom-scrollbar border-t xl:border-t-0 xl:border-l border-nexus-border">
         {selected ? (
           <>
             {/* Detail header */}
@@ -160,14 +164,14 @@ export default async function StudentDashboard({
             </div>
 
             {/* Assignment description */}
-            <div className="bg-nexus-card border border-nexus-border rounded-2xl p-4">
+            <div className="nexus-glass rounded-3xl p-4">
               <div className="text-[10px] font-extrabold uppercase tracking-widest text-nexus-muted mb-2">Assignment</div>
               <p className="text-sm leading-relaxed text-nexus-text">{selected.description}</p>
             </div>
 
             {/* Submitted content */}
             {selected.submitted_content && (
-              <div className="bg-nexus-card border border-nexus-border rounded-2xl p-4">
+              <div className="nexus-glass rounded-3xl p-4">
                 <div className="text-[10px] font-extrabold uppercase tracking-widest text-nexus-muted mb-2">Your Answer</div>
                 <p className="text-sm leading-relaxed text-nexus-text whitespace-pre-wrap">{selected.submitted_content}</p>
               </div>

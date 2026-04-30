@@ -104,10 +104,10 @@ export default async function MentorDashboard({
   return (
     <>
       {/* Center column */}
-      <main className="flex-[6] p-10 overflow-y-auto flex flex-col gap-8 bg-nexus-card custom-scrollbar">
+      <main className="flex-[6] min-w-0 p-5 sm:p-8 lg:p-10 overflow-y-auto flex flex-col gap-8 bg-nexus-card custom-scrollbar">
 
         {/* Header */}
-        <header className="flex items-center justify-between">
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-[28px] font-extrabold tracking-tight text-nexus-text">Dashboard</h1>
             <p className="text-sm text-nexus-muted mt-0.5">Welcome back, {user.name.split(' ')[0]}</p>
@@ -140,27 +140,29 @@ export default async function MentorDashboard({
                 return (
                   <div
                     key={s.id}
-                    className={`flex items-center p-4 px-5 rounded-xl border transition-all ${
+                    className={`nexus-row flex flex-col gap-3 lg:flex-row lg:items-center p-4 px-5 rounded-2xl border transition-all hover:-translate-y-0.5 ${
                       isActive
                         ? 'bg-indigo-50 dark:bg-indigo-950/20 border-indigo-300 dark:border-indigo-700'
                         : 'bg-nexus-card border-nexus-border'
                     }`}
                   >
-                    <Link
-                      href={isActive ? '/mentor' : `/mentor?st=${s.id}`}
-                      className="flex items-center mr-4 shrink-0"
-                    >
-                      <div className="w-11 h-11 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-600 flex items-center justify-center font-bold text-sm">
-                        {s.name.charAt(0)}
-                      </div>
-                    </Link>
-                    <Link
-                      href={isActive ? '/mentor' : `/mentor?st=${s.id}`}
-                      className="font-bold text-[15px] flex-[2] text-nexus-text hover:text-indigo-500 transition-colors"
-                    >
-                      {s.name}
-                    </Link>
-                    <div className="flex gap-2 text-[12px] font-semibold flex-[2]">
+                    <div className="flex min-w-0 flex-1 items-center">
+                      <Link
+                        href={isActive ? '/mentor' : `/mentor?st=${s.id}`}
+                        className="flex items-center mr-4 shrink-0"
+                      >
+                        <div className="w-11 h-11 rounded-2xl bg-indigo-100 dark:bg-indigo-950 text-indigo-600 flex items-center justify-center font-bold text-sm">
+                          {s.name.charAt(0)}
+                        </div>
+                      </Link>
+                      <Link
+                        href={isActive ? '/mentor' : `/mentor?st=${s.id}`}
+                        className="font-bold text-[15px] text-nexus-text hover:text-indigo-500 transition-colors"
+                      >
+                        {s.name}
+                      </Link>
+                    </div>
+                    <div className="flex flex-wrap gap-2 text-[12px] font-semibold lg:flex-[2]">
                       {([
                         { label: `${s.pending} pending`,     filter: 'pending',   cls: 'text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-950/40' },
                         { label: `${s.submitted} to review`, filter: 'submitted', cls: 'text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-950/40'   },
@@ -178,7 +180,7 @@ export default async function MentorDashboard({
                         )
                       })}
                     </div>
-                    <div className="text-xs text-nexus-muted">{s.total} {s.total === 1 ? 'assignment' : 'assignments'}</div>
+                    <div className="text-xs text-nexus-muted lg:text-right">{s.total} {s.total === 1 ? 'assignment' : 'assignments'}</div>
                   </div>
                 )
               })}
@@ -269,9 +271,9 @@ export default async function MentorDashboard({
               Reviewing: {selected.assignment?.title ?? '—'}
             </h2>
 
-            <div className="flex gap-6">
+            <div className="flex flex-col gap-6 lg:flex-row">
               {/* Left: assignment + student submission */}
-              <div className="bg-nexus-bg-main border border-nexus-border rounded-[28px] p-7 flex-1 flex flex-col gap-4">
+              <div className="nexus-glass rounded-[28px] p-7 flex-1 flex flex-col gap-4">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-600 flex items-center justify-center font-bold shrink-0">
                     {selected.student?.name.charAt(0) ?? '?'}
@@ -298,7 +300,7 @@ export default async function MentorDashboard({
               </div>
 
               {/* Right: feedback form or existing feedback */}
-              <div className="bg-nexus-bg-panel rounded-[28px] p-7 flex-1 flex flex-col gap-4">
+              <div className="bg-nexus-bg-panel border border-nexus-border rounded-[28px] p-7 flex-1 flex flex-col gap-4">
                 {selected.status === 'submitted' ? (
                   <ReviewForm submissionId={selected.id} />
                 ) : (
@@ -328,7 +330,7 @@ export default async function MentorDashboard({
       </main>
 
       {/* Right panel */}
-      <aside className="flex-[3.5] bg-nexus-bg-panel rounded-[40px] m-4 mr-0 p-8 flex flex-col gap-6 overflow-y-auto custom-scrollbar">
+      <aside className="w-full xl:flex-[3.5] xl:max-w-[420px] bg-nexus-bg-panel xl:rounded-[40px] m-0 xl:m-4 xl:mr-0 p-5 sm:p-8 flex flex-col gap-6 overflow-y-auto custom-scrollbar border-t xl:border-t-0 xl:border-l border-nexus-border">
         <div>
           <h3 className="text-lg font-extrabold mb-5 text-nexus-text">Overview</h3>
 
@@ -337,7 +339,7 @@ export default async function MentorDashboard({
             { label: 'To Review',   count: totalQueue,     icon: <Inbox size={16} />,      bg: 'bg-blue-100 dark:bg-blue-950 text-blue-600'       },
             { label: 'Reviewed',    count: totalReviewed,  icon: <CheckCircle size={16} />, bg: 'bg-emerald-100 dark:bg-emerald-950 text-emerald-600' },
           ].map(({ label, count, icon, bg }) => (
-            <div key={label} className="flex items-center gap-3 mb-4">
+            <div key={label} className="flex items-center gap-3 mb-4 rounded-2xl bg-nexus-card border border-nexus-border p-3">
               <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${bg}`}>
                 {icon}
               </div>
