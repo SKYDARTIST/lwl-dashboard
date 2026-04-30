@@ -3,11 +3,47 @@ import { getSupabase } from '@/lib/supabase/server'
 import { signToken } from '@/lib/auth'
 import bcrypt from 'bcryptjs'
 
-export async function POST(req: NextRequest) {
-  const { email, password } = await req.json()
+const attempts = new Map<string, { count: number; resetAt: number }>()
+const LOGIN_WINDOW_MS = 15 * 60 * 1000
+const LOGIN_LIMIT = 10
 
-  if (!email || !password) {
+function getRateLimitKey(req: NextRequest, email: unknown) {
+  const forwardedFor = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+  const ip = forwardedFor || req.headers.get('x-real-ip') || 'unknown'
+  return `${ip}:${String(email || '').toLowerCase().trim()}`
+}
+
+function isRateLimited(key: string) {
+  const now = Date.now()
+  const current = attempts.get(key)
+
+  if (!current || current.resetAt <= now) {
+    attempts.set(key, { count: 1, resetAt: now + LOGIN_WINDOW_MS })
+    return false
+  }
+
+  current.count += 1
+  attempts.set(key, current)
+  return current.count > LOGIN_LIMIT
+}
+
+export async function POST(req: NextRequest) {
+  let body: { email?: unknown; password?: unknown }
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+  }
+
+  const { email, password } = body
+
+  if (typeof email !== 'string' || typeof password !== 'string' || !email || !password) {
     return NextResponse.json({ error: 'Email and password are required' }, { status: 400 })
+  }
+
+  const rateLimitKey = getRateLimitKey(req, email)
+  if (isRateLimited(rateLimitKey)) {
+    return NextResponse.json({ error: 'Too many login attempts. Try again later.' }, { status: 429 })
   }
 
   const supabase = getSupabase()

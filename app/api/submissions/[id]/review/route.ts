@@ -13,7 +13,13 @@ export async function POST(
   }
 
   const { id } = await params
-  const body = await req.json()
+  let body
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+  }
+
   const result = validateReviewInput(body)
 
   if (!result.ok) {
@@ -57,6 +63,7 @@ export async function POST(
       reviewed_at: new Date().toISOString(),
     })
     .eq('id', id)
+    .eq('status', 'submitted')
     .select()
     .single()
 
