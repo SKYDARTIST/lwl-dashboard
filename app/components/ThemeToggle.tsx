@@ -8,7 +8,7 @@ export function ThemeToggle() {
   useEffect(() => {
     // Check if dark mode was previously set
     const isDarkMode = document.documentElement.classList.contains('dark') || 
-                       localStorage.getItem('theme') === 'dark'
+                       localStorage.getItem('nexus-theme') === 'dark'
     
     if (isDarkMode) {
       setIsDark(true)
@@ -19,11 +19,11 @@ export function ThemeToggle() {
   const toggleTheme = () => {
     if (isDark) {
       document.documentElement.classList.remove('dark')
-      localStorage.setItem('theme', 'light')
+      localStorage.setItem('nexus-theme', 'light')
       setIsDark(false)
     } else {
       document.documentElement.classList.add('dark')
-      localStorage.setItem('theme', 'dark')
+      localStorage.setItem('nexus-theme', 'dark')
       setIsDark(true)
     }
   }

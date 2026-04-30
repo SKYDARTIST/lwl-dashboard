@@ -2,16 +2,34 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getUser } from '@/lib/auth'
 import { getSupabase } from '@/lib/supabase/server'
 
+const MAX_TITLE_LENGTH = 160
+const MAX_DESCRIPTION_LENGTH = 5000
+
 export async function POST(req: NextRequest) {
   const user = await getUser()
   if (!user || user.role !== 'mentor') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { title, description, assigned_to } = await req.json()
+  let body: { title?: unknown; description?: unknown; assigned_to?: unknown }
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+  }
 
-  if (!title?.trim() || !description?.trim() || !assigned_to) {
+  const { title, description, assigned_to } = body
+
+  if (typeof title !== 'string' || typeof description !== 'string' || typeof assigned_to !== 'string' || !title.trim() || !description.trim() || !assigned_to) {
     return NextResponse.json({ error: 'title, description, and assigned_to are required' }, { status: 400 })
+  }
+
+  if (title.trim().length > MAX_TITLE_LENGTH) {
+    return NextResponse.json({ error: `Title too long (max ${MAX_TITLE_LENGTH} chars)` }, { status: 400 })
+  }
+
+  if (description.trim().length > MAX_DESCRIPTION_LENGTH) {
+    return NextResponse.json({ error: `Description too long (max ${MAX_DESCRIPTION_LENGTH} chars)` }, { status: 400 })
   }
 
   const supabase = getSupabase()
