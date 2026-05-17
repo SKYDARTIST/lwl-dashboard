@@ -6,6 +6,16 @@ A two-sided learning platform. Students submit work; mentors review it and give 
 
 ---
 
+## Deliverables
+
+- **Live demo:** https://lwl-dashboard.vercel.app
+- [`SPEC.md`](SPEC.md) — product goals, non-goals, user flows, and acceptance criteria
+- [`docs/architecture.md`](docs/architecture.md) — runtime flow, module map, security posture, cost notes, and hardening backlog
+- [`docs/workflow.md`](docs/workflow.md) — cleanup notes and verification commands
+- [`__tests__/review-validation.test.ts`](__tests__/review-validation.test.ts) — validation coverage for the review flow
+
+---
+
 ## Setup (under 5 minutes)
 
 ### Prerequisites
@@ -30,6 +40,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 JWT_SECRET=any_random_string_at_least_32_chars
 ```
+
+You can start from `.env.example`; do not commit real Supabase or JWT secrets.
 
 ### 3. Create the database schema
 
@@ -159,9 +171,20 @@ Other choices worth noting:
 
 ```bash
 npm test
+npm run build
+npm audit --audit-level=high
 ```
 
 9 tests covering the submission review validation flow: feedback required, whitespace trimming, all valid grades accepted, invalid grades rejected, optional grade (null), and full happy-path.
+
+## Security posture
+
+- JWT auth uses an httpOnly cookie and requires `JWT_SECRET`; there is no fallback secret.
+- Student and mentor dashboards are protected by route middleware and server-side API checks.
+- Mentor actions verify the student belongs to the signed-in mentor.
+- Student submissions verify the assignment belongs to the signed-in student.
+- Login attempts are rate-limited in memory for demo protection.
+- Supabase service-role credentials stay server-side.
 
 ---
 

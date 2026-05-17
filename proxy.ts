@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { jwtVerify } from 'jose'
 
-if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET environment variable is not set')
-const secret = new TextEncoder().encode(process.env.JWT_SECRET)
+function getJwtSecret() {
+  if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET environment variable is not set')
+  return new TextEncoder().encode(process.env.JWT_SECRET)
+}
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl
@@ -13,7 +15,7 @@ export async function proxy(req: NextRequest) {
   }
 
   try {
-    const { payload } = await jwtVerify(token, secret)
+    const { payload } = await jwtVerify(token, getJwtSecret())
     const role = payload.role as string
 
     if (pathname.startsWith('/student') && role !== 'student') {
