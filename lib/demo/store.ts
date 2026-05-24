@@ -12,7 +12,7 @@ import {
 
 // Per-visitor mutations are stored in a single HTTP-only cookie. Browsers
 // silently drop cookies above ~4KB, so we trim the oldest entries until the
-// serialized payload fits well under that limit. The 3800-byte budget leaves
+// URL-encoded payload fits well under that limit. The 3800-byte budget leaves
 // headroom for the cookie's name + attributes.
 const COOKIE_NAME = 'nexus_demo'
 const COOKIE_MAX_BYTES = 3800
@@ -113,34 +113,48 @@ function applyMutations(record: Record<string, Mutation>): DemoState {
   }
 }
 
-function truncate(text: string): string {
-  if (text.length <= FIELD_MAX_CHARS) return text
-  return text.slice(0, FIELD_MAX_CHARS - TRUNCATION_SUFFIX.length) + TRUNCATION_SUFFIX
+function truncate(text: string, maxChars = FIELD_MAX_CHARS): string {
+  if (text.length <= maxChars) return text
+  return text.slice(0, maxChars - TRUNCATION_SUFFIX.length) + TRUNCATION_SUFFIX
+}
+
+function encodedCookieBytes(record: Record<string, Mutation>): number {
+  return encodeURIComponent(JSON.stringify(record)).length
 }
 
 // Mutations contain visitor-supplied text fields. The cookie has a hard 4KB
 // browser limit, so first truncate large text fields, then drop oldest
 // entries if the total payload still exceeds the budget. The newest mutation
 // is always retained so the visitor sees the action they just took.
-function shrinkMutation(m: Mutation): Mutation {
-  if (m.t === 'assign') return { ...m, title: truncate(m.title), description: truncate(m.description) }
-  if (m.t === 'submit') return { ...m, content: truncate(m.content) }
-  return { ...m, feedback: truncate(m.feedback) }
+function shrinkMutation(m: Mutation, maxChars = FIELD_MAX_CHARS): Mutation {
+  if (m.t === 'assign') return { ...m, title: truncate(m.title, maxChars), description: truncate(m.description, maxChars) }
+  if (m.t === 'submit') return { ...m, content: truncate(m.content, maxChars) }
+  return { ...m, feedback: truncate(m.feedback, maxChars) }
 }
 
 function trimToBudget(record: Record<string, Mutation>, latestKey: string): Record<string, Mutation> {
-  let serialized = JSON.stringify(record)
-  if (serialized.length <= COOKIE_MAX_BYTES) return record
+  let size = encodedCookieBytes(record)
+  if (size <= COOKIE_MAX_BYTES) return record
 
   // Drop oldest entries (excluding the latest, which the user just produced)
   // until we fit. If the latest alone exceeds the budget, it has already been
   // truncated to FIELD_MAX_CHARS before this function runs.
   const keys = Object.keys(record).filter(k => k !== latestKey)
-  while (keys.length > 0 && serialized.length > COOKIE_MAX_BYTES) {
+  while (keys.length > 0 && size > COOKIE_MAX_BYTES) {
     const oldest = keys.shift()!
     delete record[oldest]
-    serialized = JSON.stringify(record)
+    size = encodedCookieBytes(record)
   }
+
+  // If the latest mutation alone is still too large after URL encoding
+  // (common with emoji or non-Latin text), progressively compress its text.
+  const latest = record[latestKey]
+  for (const limit of [750, 500, 250, 120]) {
+    if (size <= COOKIE_MAX_BYTES || !latest) break
+    record[latestKey] = shrinkMutation(latest, limit)
+    size = encodedCookieBytes(record)
+  }
+
   return record
 }
 

@@ -6,13 +6,15 @@ A two-sided learning platform. Students submit work; mentors review it and give 
 
 ---
 
-## Demo mode (May 2026 update)
+## Demo Mode (May 2026 Update)
 
-The live site now runs without a database. Here's why and what changed.
+The live portfolio deployment now runs without an external database so reviewers can always click through the full product flow.
 
-**Why:** Supabase's free tier allows only 2 active projects per account. Both slots are taken by my live apps that earn revenue (Anti-Gravity on the Play Store, MindMint). Inactive projects auto-pause after 7 days, which had made this portfolio demo return 401 on every login.
+**Current live version:** Static seed data plus a per-visitor HTTP-only cookie. Visitors can log in, submit assignments, review work, create assignments, and reset their local demo state without depending on Supabase uptime.
 
-**The fix:** I rebuilt the data layer to run entirely from a static seed file plus per-visitor browser cookies — no database calls anywhere. The app behaves identically: you log in, submit assignments, give reviews, create new ones, everything works end-to-end. Mutations persist in your browser via an HTTP-only cookie until you reset.
+**Original architecture:** The app was first built with Supabase-backed users, mentor-student mapping, assignments, submissions, password hashes, and JWT sessions. The schema and seed script are still preserved in [`supabase/`](supabase/) and [`scripts/seed.ts`](scripts/seed.ts), so the project can be restored to a real database-backed version when needed.
+
+**Why I changed the public demo:** Supabase free-tier projects can pause after inactivity. That made the portfolio deployment unreliable: reviewers could hit a 401 even though the product itself worked. Demo mode keeps the end-to-end UX available while documenting the original backend path honestly.
 
 **What this means for a visitor:**
 - Any email + any password works as a login.
@@ -20,7 +22,7 @@ The live site now runs without a database. Here's why and what changed.
 - Unrecognized emails put you in a fresh **Guest Student** account with 4 clean pending assignments — so you can test the submit flow without bumping into Aarav's already-submitted work.
 - A small **"Demo mode"** pill bottom-right of the dashboard opens a popover with a **Reset demo state** button.
 
-**What this means for the code:** [`lib/demo/`](lib/demo/) replaces the Supabase data layer. The original Supabase setup (schema, seed script, server client) is left in the repo for reference but is unused.
+**What this means for the code:** [`lib/demo/`](lib/demo/) is the active data layer for the hosted demo. [`lib/supabase/server.ts`](lib/supabase/server.ts), [`supabase/schema.sql`](supabase/schema.sql), and [`scripts/seed.ts`](scripts/seed.ts) remain as the archived Supabase path.
 
 ---
 
@@ -53,9 +55,9 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3005](http://localhost:3005). No database, no env vars, no seed step — everything runs from `lib/demo/`.
+Open [http://localhost:3005](http://localhost:3005). No database, no env vars, no seed step — the default demo runtime uses `lib/demo/`.
 
-> **Want a real backend?** The original Supabase setup is preserved in [`supabase/schema.sql`](supabase/schema.sql) and [`scripts/seed.ts`](scripts/seed.ts). Set the original env vars (`.env.example`) and swap `getDemoState()` back to `getSupabase()` in the dashboard pages and API routes. See the git history before the May 2026 demo-mode commit.
+> **Want a real backend?** The Supabase schema, seed script, and server client are still in the repo. To restore the database-backed version, provision Supabase, set the env vars from `.env.example`, seed the database, and swap the active `getDemoState()` calls back to the Supabase-backed reads/writes from the pre-demo commit history.
 
 ---
 
@@ -108,13 +110,13 @@ Each student could track not just assignments but exams, projects, and general p
 
 The other thing I'd add immediately is notifications. Right now you have to log in to know if something happened. A student should get notified the moment a new assignment is assigned or feedback lands. A mentor should get notified when a submission comes in. That would make the review loop actually fast instead of relying on people to check in.
 
-On the technical side: mobile layout needs work (the sidebar breaks below ~768px), and I'd generate TypeScript types from Supabase instead of using `any` for DB rows.
+On the technical side: mobile layout needs work below ~768px. If I re-enable the Supabase runtime, I would also generate TypeScript types from the database schema instead of relying on loose row shapes.
 
 ---
 
 ## Why this stack
 
-I've used Next.js, Supabase, and JWT across several personal projects before this. I don't come from a CS background so I made a deliberate call — use the tools I know well and focus on building something solid, rather than experiment with something new and end up with something half-done. The stack fit the brief well anyway: Supabase gives a live database with a public URL so the demo actually works, Next.js handles both the UI and the API in one project, and JWT in an httpOnly cookie is simple auth that doesn't need a third-party service.
+I've used Next.js, Supabase, and JWT across several personal projects before this. The original build used Supabase because it is a straightforward way to model users, assignments, submissions, and mentor-student relationships behind a public URL. The hosted portfolio version now uses a cookie-backed demo layer so the app remains reviewable even when no database project is active. Next.js still handles both the UI and API routes, and JWT in an HTTP-only cookie keeps role-based navigation close to the original architecture.
 
 Other choices worth noting:
 - **Tailwind v4 CSS-first config** — `@theme` directive with CSS custom properties for the full light/dark token system
@@ -141,7 +143,7 @@ The app was originally hardened for a real backend (JWT + bcrypt + Supabase RLS 
 - JWT in an httpOnly cookie; role and ownership checks on every mutation route (mentors can only review their own students' work; students can only submit to their own assignments).
 - Route protection at both the `proxy.ts` middleware layer and the page-level `getUser()` check.
 - CSRF protection: every mutation route (`/api/auth/login`, `/api/auth/logout`, `/api/assignments`, `/api/submissions`, `/api/submissions/[id]/review`, `/api/demo/reset`) verifies the `Origin` header matches the request origin.
-- Cookie size is capped at ~3.8KB with per-field truncation, so a single oversized payload can't silently break a visitor's session.
+- Cookie size is capped against the URL-encoded payload with per-field truncation, so a single oversized payload cannot silently break a visitor's session.
 
 **Relaxed for demo mode (intentional)**
 - Login accepts any email + any non-empty password. No bcrypt comparison, no rate-limit. The goal is to let any visitor try the app instantly; there's no real account to protect.
