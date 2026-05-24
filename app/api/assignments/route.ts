@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getUser } from '@/lib/auth'
-import { getSupabase } from '@/lib/supabase/server'
+import { appendMutation, getDemoState, newId } from '@/lib/demo/store'
+import { isSameOrigin } from '@/lib/csrf'
 
 const MAX_TITLE_LENGTH = 160
 const MAX_DESCRIPTION_LENGTH = 5000
 
 export async function POST(req: NextRequest) {
+  if (!isSameOrigin(req)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const user = await getUser()
   if (!user || user.role !== 'mentor') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -32,34 +37,27 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `Description too long (max ${MAX_DESCRIPTION_LENGTH} chars)` }, { status: 400 })
   }
 
-  const supabase = getSupabase()
-
-  // Verify the student is actually assigned to this mentor
-  const { data: link } = await supabase
-    .from('mentor_students')
-    .select('student_id')
-    .eq('mentor_id', user.id)
-    .eq('student_id', assigned_to)
-    .single()
-
-  if (!link) {
+  const state = await getDemoState()
+  const isLinked = state.mentor_students.some(
+    link => link.mentor_id === user.id && link.student_id === assigned_to,
+  )
+  if (!isLinked) {
     return NextResponse.json({ error: 'Student not assigned to you' }, { status: 403 })
   }
 
-  const { data, error } = await supabase
-    .from('assignments')
-    .insert({
-      title: title.trim(),
-      description: description.trim(),
-      created_by: user.id,
-      assigned_to,
-    })
-    .select()
-    .single()
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  const created = {
+    id: newId('a'),
+    title: title.trim(),
+    description: description.trim(),
+    created_by: user.id,
+    assigned_to,
+    created_at: new Date().toISOString(),
   }
 
-  return NextResponse.json(data, { status: 201 })
+  const res = NextResponse.json(created, { status: 201 })
+  await appendMutation(
+    { t: 'assign', ...created },
+    res,
+  )
+  return res
 }

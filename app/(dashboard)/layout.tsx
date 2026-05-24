@@ -4,6 +4,7 @@ import { Home, LogOut, Moon, Sun } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { DemoBadge } from "./DemoBadge";
 
 function ThemeToggleInline() {
   const [dark, setDark] = useState(false);
@@ -59,6 +60,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="flex-1 flex overflow-hidden bg-nexus-bg-main rounded-l-[40px] -ml-5">
         {children}
       </div>
+
+      <DemoBadge />
     </div>
   );
 }

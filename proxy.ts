@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { jwtVerify } from 'jose'
 
+// Demo mode runs without external infra — fall back to a fixed string when
+// JWT_SECRET is unset. Must match the fallback in lib/auth.ts.
+const DEMO_JWT_FALLBACK = 'nexus-demo-jwt-secret-not-for-production-use'
+
 function getJwtSecret() {
-  if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET environment variable is not set')
-  return new TextEncoder().encode(process.env.JWT_SECRET)
+  const secret = process.env.JWT_SECRET || DEMO_JWT_FALLBACK
+  return new TextEncoder().encode(secret)
 }
 
 export async function proxy(req: NextRequest) {

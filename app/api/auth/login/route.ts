@@ -1,33 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSupabase } from '@/lib/supabase/server'
 import { signToken } from '@/lib/auth'
-import bcrypt from 'bcryptjs'
+import { SEED_USERS } from '@/lib/demo/seed'
+import { isSameOrigin } from '@/lib/csrf'
 
-const attempts = new Map<string, { count: number; resetAt: number }>()
-const LOGIN_WINDOW_MS = 15 * 60 * 1000
-const LOGIN_LIMIT = 10
-
-function getRateLimitKey(req: NextRequest, email: unknown) {
-  const forwardedFor = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-  const ip = forwardedFor || req.headers.get('x-real-ip') || 'unknown'
-  return `${ip}:${String(email || '').toLowerCase().trim()}`
-}
-
-function isRateLimited(key: string) {
-  const now = Date.now()
-  const current = attempts.get(key)
-
-  if (!current || current.resetAt <= now) {
-    attempts.set(key, { count: 1, resetAt: now + LOGIN_WINDOW_MS })
-    return false
-  }
-
-  current.count += 1
-  attempts.set(key, current)
-  return current.count > LOGIN_LIMIT
-}
+// Demo mode: any email + any non-empty password is accepted. If the email
+// matches a seeded user, the visitor "becomes" that user (Aarav, Priya, …).
+// Unrecognized emails get the dedicated guest identity (u-guest), which has
+// its own clean assignments so submit/review flows aren't blocked by Aarav's
+// already-submitted work.
+const GENERIC_DEMO_STUDENT = { id: 'u-guest', name: 'Guest Student', role: 'student' as const }
 
 export async function POST(req: NextRequest) {
+  if (!isSameOrigin(req)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   let body: { email?: unknown; password?: unknown }
   try {
     body = await req.json()
@@ -41,23 +28,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Email and password are required' }, { status: 400 })
   }
 
-  const rateLimitKey = getRateLimitKey(req, email)
-  if (isRateLimited(rateLimitKey)) {
-    return NextResponse.json({ error: 'Too many login attempts. Try again later.' }, { status: 429 })
-  }
+  const normalized = email.toLowerCase().trim()
+  const seeded = SEED_USERS.find(u => u.email === normalized)
+  const user = seeded
+    ? { id: seeded.id, name: seeded.name, role: seeded.role }
+    : GENERIC_DEMO_STUDENT
 
-  const supabase = getSupabase()
-  const { data: user } = await supabase
-    .from('users')
-    .select('*')
-    .eq('email', email.toLowerCase().trim())
-    .single()
-
-  if (!user || !(await bcrypt.compare(password, user.password_hash))) {
-    return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
-  }
-
-  const token = await signToken({ id: user.id, name: user.name, role: user.role })
+  const token = await signToken(user)
 
   const res = NextResponse.json({ role: user.role, name: user.name })
   res.cookies.set('token', token, {

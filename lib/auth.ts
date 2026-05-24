@@ -2,9 +2,13 @@ import { cookies } from 'next/headers'
 import { jwtVerify, SignJWT } from 'jose'
 import type { JWTUser } from './types'
 
+// Demo mode runs without external infra, so JWT_SECRET falls back to a fixed
+// string when unset. The cookie still authenticates the visitor's chosen
+// demo role for the session — there's no real account to protect.
+const DEMO_JWT_FALLBACK = 'nexus-demo-jwt-secret-not-for-production-use'
+
 function getJwtSecret() {
-  const jwtSecret = process.env.JWT_SECRET
-  if (!jwtSecret) throw new Error('JWT_SECRET environment variable is not set')
+  const jwtSecret = process.env.JWT_SECRET || DEMO_JWT_FALLBACK
   return new TextEncoder().encode(jwtSecret)
 }
 

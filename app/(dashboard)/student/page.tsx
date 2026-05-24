@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { FileText, CheckCircle, Clock, BookOpen } from 'lucide-react'
 import { getUser } from '@/lib/auth'
-import { getSupabase } from '@/lib/supabase/server'
+import { getDemoState } from '@/lib/demo/store'
 import { SubmitForm } from './SubmitForm'
 
 export default async function StudentDashboard({
@@ -14,16 +14,16 @@ export default async function StudentDashboard({
   if (!user) redirect('/login')
   if (user.role !== 'student') redirect('/mentor')
 
-  const supabase = getSupabase()
+  const state = await getDemoState()
   const params = await searchParams
 
-  const [{ data: assignments }, { data: submissions }] = await Promise.all([
-    supabase.from('assignments').select('*').eq('assigned_to', user.id).order('created_at', { ascending: true }),
-    supabase.from('submissions').select('*').eq('student_id', user.id),
-  ])
+  const assignments = state.assignments
+    .filter(a => a.assigned_to === user.id)
+    .sort((a, b) => a.created_at.localeCompare(b.created_at))
+  const submissions = state.submissions.filter(s => s.student_id === user.id)
 
-  const merged = (assignments ?? []).map(a => {
-    const sub = (submissions ?? []).find(s => s.assignment_id === a.id)
+  const merged = assignments.map(a => {
+    const sub = submissions.find(s => s.assignment_id === a.id)
     return {
       ...a,
       status: sub ? (sub.status as 'submitted' | 'reviewed') : ('pending' as const),

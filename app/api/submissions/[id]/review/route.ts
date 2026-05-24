@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getUser } from '@/lib/auth'
-import { getSupabase } from '@/lib/supabase/server'
 import { validateReviewInput } from '@/lib/review-validation'
+import { appendMutation, getDemoState } from '@/lib/demo/store'
+import { isSameOrigin } from '@/lib/csrf'
 
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (!isSameOrigin(req)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const user = await getUser()
   if (!user || user.role !== 'mentor') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -21,55 +26,39 @@ export async function POST(
   }
 
   const result = validateReviewInput(body)
-
   if (!result.ok) {
     return NextResponse.json({ error: result.error }, { status: result.status })
   }
 
-  const supabase = getSupabase()
-
-  // Fetch submission and verify it belongs to one of this mentor's students
-  const { data: submission } = await supabase
-    .from('submissions')
-    .select('student_id, status')
-    .eq('id', id)
-    .single()
-
+  const state = await getDemoState()
+  const submission = state.submissions.find(s => s.id === id)
   if (!submission) {
     return NextResponse.json({ error: 'Submission not found' }, { status: 404 })
   }
-
   if (submission.status === 'reviewed') {
     return NextResponse.json({ error: 'Already reviewed' }, { status: 409 })
   }
 
-  const { data: link } = await supabase
-    .from('mentor_students')
-    .select('student_id')
-    .eq('mentor_id', user.id)
-    .eq('student_id', submission.student_id)
-    .single()
-
-  if (!link) {
+  const isMentorOfStudent = state.mentor_students.some(
+    link => link.mentor_id === user.id && link.student_id === submission.student_id,
+  )
+  if (!isMentorOfStudent) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const { data, error } = await supabase
-    .from('submissions')
-    .update({
-      status: 'reviewed',
-      feedback: result.feedback,
-      grade: result.grade,
-      reviewed_at: new Date().toISOString(),
-    })
-    .eq('id', id)
-    .eq('status', 'submitted')
-    .select()
-    .single()
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  const reviewed_at = new Date().toISOString()
+  const updated = {
+    ...submission,
+    status: 'reviewed' as const,
+    feedback: result.feedback,
+    grade: result.grade ?? null,
+    reviewed_at,
   }
 
-  return NextResponse.json(data)
+  const res = NextResponse.json(updated)
+  await appendMutation(
+    { t: 'review', submission_id: id, feedback: result.feedback, grade: result.grade ?? null, reviewed_at },
+    res,
+  )
+  return res
 }

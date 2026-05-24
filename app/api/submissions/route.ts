@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getUser } from '@/lib/auth'
-import { getSupabase } from '@/lib/supabase/server'
+import { appendMutation, getDemoState, newId } from '@/lib/demo/store'
+import { isSameOrigin } from '@/lib/csrf'
 
 const MAX_CONTENT_LENGTH = 10000
 
 export async function POST(req: NextRequest) {
+  if (!isSameOrigin(req)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const user = await getUser()
   if (!user || user.role !== 'student') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -26,41 +31,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Content too long (max 10,000 chars)' }, { status: 400 })
   }
 
-  const supabase = getSupabase()
-
-  // Verify assignment belongs to this student
-  const { data: assignment } = await supabase
-    .from('assignments')
-    .select('id')
-    .eq('id', assignment_id)
-    .eq('assigned_to', user.id)
-    .single()
-
+  const state = await getDemoState()
+  const assignment = state.assignments.find(a => a.id === assignment_id && a.assigned_to === user.id)
   if (!assignment) {
     return NextResponse.json({ error: 'Assignment not found' }, { status: 404 })
   }
 
-  // Prevent duplicate submissions
-  const { data: existing } = await supabase
-    .from('submissions')
-    .select('id')
-    .eq('assignment_id', assignment_id)
-    .eq('student_id', user.id)
-    .single()
-
+  const existing = state.submissions.find(
+    s => s.assignment_id === assignment_id && s.student_id === user.id,
+  )
   if (existing) {
     return NextResponse.json({ error: 'Already submitted' }, { status: 409 })
   }
 
-  const { data, error } = await supabase
-    .from('submissions')
-    .insert({ assignment_id, student_id: user.id, content: content.trim(), status: 'submitted' })
-    .select()
-    .single()
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  const created = {
+    id: newId('s'),
+    assignment_id,
+    student_id: user.id,
+    content: content.trim(),
+    submitted_at: new Date().toISOString(),
   }
 
-  return NextResponse.json(data, { status: 201 })
+  const res = NextResponse.json({ ...created, status: 'submitted' }, { status: 201 })
+  await appendMutation({ t: 'submit', ...created }, res)
+  return res
 }

@@ -6,6 +6,24 @@ A two-sided learning platform. Students submit work; mentors review it and give 
 
 ---
 
+## Demo mode (May 2026 update)
+
+The live site now runs without a database. Here's why and what changed.
+
+**Why:** Supabase's free tier allows only 2 active projects per account. Both slots are taken by my live apps that earn revenue (Anti-Gravity on the Play Store, MindMint). Inactive projects auto-pause after 7 days, which had made this portfolio demo return 401 on every login.
+
+**The fix:** I rebuilt the data layer to run entirely from a static seed file plus per-visitor browser cookies — no database calls anywhere. The app behaves identically: you log in, submit assignments, give reviews, create new ones, everything works end-to-end. Mutations persist in your browser via an HTTP-only cookie until you reset.
+
+**What this means for a visitor:**
+- Any email + any password works as a login.
+- Recognized seed emails (e.g. `aarav@lwl.edu`) put you in that user's account with their existing assignments and history.
+- Unrecognized emails put you in a fresh **Guest Student** account with 4 clean pending assignments — so you can test the submit flow without bumping into Aarav's already-submitted work.
+- A small **"Demo mode"** pill bottom-right of the dashboard opens a popover with a **Reset demo state** button.
+
+**What this means for the code:** [`lib/demo/`](lib/demo/) replaces the Supabase data layer. The original Supabase setup (schema, seed script, server client) is left in the repo for reference but is unused.
+
+---
+
 ## Deliverables
 
 - **Live demo:** https://lwl-dashboard.vercel.app
@@ -16,11 +34,10 @@ A two-sided learning platform. Students submit work; mentors review it and give 
 
 ---
 
-## Setup (under 5 minutes)
+## Setup (under 2 minutes)
 
 ### Prerequisites
 - Node.js 18+
-- A Supabase project (free tier is fine)
 
 ### 1. Clone and install
 
@@ -30,76 +47,15 @@ cd lwl-dashboard
 npm install
 ```
 
-### 2. Environment variables
-
-Create `.env.local` in the project root:
-
-```env
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
-JWT_SECRET=any_random_string_at_least_32_chars
-```
-
-You can start from `.env.example`; do not commit real Supabase or JWT secrets.
-
-### 3. Create the database schema
-
-Run this SQL in your Supabase SQL Editor (Dashboard → SQL Editor):
-
-```sql
-create table users (
-  id uuid primary key default gen_random_uuid(),
-  name text not null,
-  email text unique not null,
-  password_hash text not null,
-  role text not null check (role in ('student', 'mentor')),
-  created_at timestamptz default now()
-);
-
-create table mentor_students (
-  mentor_id uuid references users(id) on delete cascade,
-  student_id uuid references users(id) on delete cascade,
-  primary key (mentor_id, student_id)
-);
-
-create table assignments (
-  id uuid primary key default gen_random_uuid(),
-  title text not null,
-  description text not null,
-  created_by uuid references users(id) on delete cascade,
-  assigned_to uuid references users(id) on delete cascade,
-  created_at timestamptz default now()
-);
-
-create table submissions (
-  id uuid primary key default gen_random_uuid(),
-  assignment_id uuid references assignments(id) on delete cascade,
-  student_id uuid references users(id) on delete cascade,
-  content text not null,
-  status text not null default 'submitted' check (status in ('submitted', 'reviewed')),
-  feedback text,
-  grade text,
-  submitted_at timestamptz default now(),
-  reviewed_at timestamptz
-);
-```
-
-### 4. Seed the database
-
-```bash
-npm run seed
-```
-
-This populates 2 mentors, 6 students, 12 assignments, and 8 submissions with mixed statuses.
-
-### 5. Run the dev server
+### 2. Run the dev server
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3005](http://localhost:3005).
+Open [http://localhost:3005](http://localhost:3005). No database, no env vars, no seed step — everything runs from `lib/demo/`.
+
+> **Want a real backend?** The original Supabase setup is preserved in [`supabase/schema.sql`](supabase/schema.sql) and [`scripts/seed.ts`](scripts/seed.ts). Set the original env vars (`.env.example`) and swap `getDemoState()` back to `getSupabase()` in the dashboard pages and API routes. See the git history before the May 2026 demo-mode commit.
 
 ---
 
@@ -179,12 +135,18 @@ npm audit --audit-level=high
 
 ## Security posture
 
-- JWT auth uses an httpOnly cookie and requires `JWT_SECRET`; there is no fallback secret.
-- Student and mentor dashboards are protected by route middleware and server-side API checks.
-- Mentor actions verify the student belongs to the signed-in mentor.
-- Student submissions verify the assignment belongs to the signed-in student.
-- Login attempts are rate-limited in memory for demo protection.
-- Supabase service-role credentials stay server-side.
+The app was originally hardened for a real backend (JWT + bcrypt + Supabase RLS + rate-limiting + ownership checks at every API). Demo mode keeps most of that and relaxes what makes sense for a public, no-backend demo:
+
+**Still enforced**
+- JWT in an httpOnly cookie; role and ownership checks on every mutation route (mentors can only review their own students' work; students can only submit to their own assignments).
+- Route protection at both the `proxy.ts` middleware layer and the page-level `getUser()` check.
+- CSRF protection: every mutation route (`/api/auth/login`, `/api/auth/logout`, `/api/assignments`, `/api/submissions`, `/api/submissions/[id]/review`, `/api/demo/reset`) verifies the `Origin` header matches the request origin.
+- Cookie size is capped at ~3.8KB with per-field truncation, so a single oversized payload can't silently break a visitor's session.
+
+**Relaxed for demo mode (intentional)**
+- Login accepts any email + any non-empty password. No bcrypt comparison, no rate-limit. The goal is to let any visitor try the app instantly; there's no real account to protect.
+- `JWT_SECRET` falls back to a hardcoded string when unset. Anyone could forge a mentor token, but since you can also self-promote via the login endpoint, this isn't a privilege boundary worth defending in a public demo.
+- All visitor data lives in their own browser cookie. There is no cross-visitor state to leak.
 
 ---
 

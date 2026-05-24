@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { FileText, Users, Inbox, CheckCircle, X } from 'lucide-react'
 import { getUser } from '@/lib/auth'
-import { getSupabase } from '@/lib/supabase/server'
+import { getDemoState } from '@/lib/demo/store'
 import { ReviewForm } from './ReviewForm'
 import { StudentDetailSection } from './StudentDetailWrapper'
 import { CreateAssignmentForm } from './CreateAssignmentForm'
@@ -16,28 +16,23 @@ export default async function MentorDashboard({
   if (!user) redirect('/login')
   if (user.role !== 'mentor') redirect('/student')
 
-  const supabase = getSupabase()
+  const state = await getDemoState()
   const params = await searchParams
 
-  // Step 1: mentor's student IDs
-  const { data: links } = await supabase
-    .from('mentor_students')
-    .select('student_id')
-    .eq('mentor_id', user.id)
-  const studentIds = (links ?? []).map(l => l.student_id)
+  const studentIds = state.mentor_students
+    .filter(link => link.mentor_id === user.id)
+    .map(link => link.student_id)
 
-  // Steps 2-4: students, assignments, submissions in parallel
-  const [{ data: students }, { data: assignments }, { data: submissions }] = await Promise.all([
-    studentIds.length > 0
-      ? supabase.from('users').select('id, name, email').in('id', studentIds)
-      : Promise.resolve({ data: [] }),
-    studentIds.length > 0
-      ? supabase.from('assignments').select('id, title, description, assigned_to, created_at').in('assigned_to', studentIds)
-      : Promise.resolve({ data: [] }),
-    studentIds.length > 0
-      ? supabase.from('submissions').select('id, assignment_id, student_id, content, status, feedback, grade, submitted_at, reviewed_at').in('student_id', studentIds).order('submitted_at', { ascending: false })
-      : Promise.resolve({ data: [] }),
-  ])
+  const students = state.users
+    .filter(u => studentIds.includes(u.id))
+    .map(u => ({ id: u.id, name: u.name, email: u.email }))
+  const assignments = state.assignments
+    .filter(a => studentIds.includes(a.assigned_to))
+    .map(a => ({ id: a.id, title: a.title, description: a.description, assigned_to: a.assigned_to, created_at: a.created_at }))
+  const submissions = state.submissions
+    .filter(s => studentIds.includes(s.student_id))
+    .map(s => ({ id: s.id, assignment_id: s.assignment_id, student_id: s.student_id, content: s.content, status: s.status, feedback: s.feedback, grade: s.grade, submitted_at: s.submitted_at, reviewed_at: s.reviewed_at }))
+    .sort((a, b) => b.submitted_at.localeCompare(a.submitted_at))
 
   // Student stats
   const studentStats = (students ?? []).map(s => {
